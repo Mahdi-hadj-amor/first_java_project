@@ -1,0 +1,252 @@
+package com.gestionfacture;
+
+import javax.swing.*;
+import java.awt.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import javax.swing.table.DefaultTableModel;
+
+public class ClientPanel extends JPanel {
+    private JTable dgvClients;
+    private JTextField txtFullName;
+    private JTextField txtTaxNumber;
+    private JTextField txtAddress;
+    private JTextField txtPhoneNumber;
+    private JButton btnAddClient;
+    private JButton btnEditClient;
+    private JButton btnDeleteClient;
+    private JLabel lblFullName;
+    private JLabel lblTaxNumber;
+    private JLabel lblAddress;
+    private JLabel lblPhoneNumber;
+    private JTextField txtSearchName;
+    private JLabel lblSearch;
+    private JLabel lblNote;
+
+    public ClientPanel() {
+        initializeComponents();
+        loadClients();
+    }
+
+    private void initializeComponents() {
+        setBounds(0, 0, 1482, 688);
+        setBackground(Color.WHITE);
+        setLayout(null);
+
+        // Clients Table
+        String[] columnNames = {"Code Client", "Nom Prenom", "Matricule Fiscale", "Adresse", "Num Telephone"};
+        DefaultTableModel model = new DefaultTableModel(columnNames, 0);
+        dgvClients = new JTable(model);
+        JScrollPane scrollPane = new JScrollPane(dgvClients);
+        scrollPane.setBounds(12, 13, 1206, 264);
+        add(scrollPane);
+
+        // Full Name Label
+        lblFullName = new JLabel("Full Name");
+        lblFullName.setBounds(12, 378, 76, 20);
+        add(lblFullName);
+
+        // Full Name Text Field
+        txtFullName = new JTextField();
+        txtFullName.setBounds(130, 378, 200, 27);
+        add(txtFullName);
+
+        // Tax Number Label
+        lblTaxNumber = new JLabel("Tax Number");
+        lblTaxNumber.setBounds(12, 428, 88, 20);
+        add(lblTaxNumber);
+
+        // Tax Number Text Field
+        txtTaxNumber = new JTextField();
+        txtTaxNumber.setBounds(130, 428, 125, 27);
+        add(txtTaxNumber);
+
+        // Address Label
+        lblAddress = new JLabel("Address");
+        lblAddress.setBounds(12, 478, 62, 20);
+        add(lblAddress);
+
+        // Address Text Field
+        txtAddress = new JTextField();
+        txtAddress.setBounds(130, 478, 200, 27);
+        add(txtAddress);
+
+        // Phone Number Label
+        lblPhoneNumber = new JLabel("Phone Number");
+        lblPhoneNumber.setBounds(12, 528, 108, 20);
+        add(lblPhoneNumber);
+
+        // Phone Number Text Field
+        txtPhoneNumber = new JTextField();
+        txtPhoneNumber.setBounds(130, 528, 125, 27);
+        add(txtPhoneNumber);
+
+        // Add Button
+        btnAddClient = new JButton("Add");
+        btnAddClient.setBounds(501, 390, 100, 38);
+        btnAddClient.setBackground(Color.GREEN);
+        btnAddClient.addActionListener(e -> btnAddClient_Click());
+        add(btnAddClient);
+
+        // Edit Button
+        btnEditClient = new JButton("Edit");
+        btnEditClient.setBounds(501, 440, 100, 38);
+        btnEditClient.setBackground(Color.BLUE);
+        btnEditClient.addActionListener(e -> btnEditClient_Click());
+        add(btnEditClient);
+
+        // Delete Button
+        btnDeleteClient = new JButton("Delete");
+        btnDeleteClient.setBounds(501, 490, 100, 38);
+        btnDeleteClient.setBackground(Color.RED);
+        btnDeleteClient.addActionListener(e -> btnDeleteClient_Click());
+        add(btnDeleteClient);
+
+        // Search Label
+        lblSearch = new JLabel("Search By Name:");
+        lblSearch.setBounds(886, 290, 124, 20);
+        add(lblSearch);
+
+        // Search Text Field
+        txtSearchName = new JTextField();
+        txtSearchName.setBounds(1016, 287, 200, 27);
+        add(txtSearchName);
+
+        // Note Label
+        lblNote = new JLabel("* Double-click on a row to edit the client's information.");
+        lblNote.setBounds(638, 449, 372, 20);
+        lblNote.setForeground(Color.RED);
+        add(lblNote);
+
+        // Double-click to edit
+        dgvClients.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                if (evt.getClickCount() == 2) {
+                    int row = dgvClients.getSelectedRow();
+                    if (row >= 0) {
+                        txtFullName.setText(dgvClients.getValueAt(row, 1).toString());
+                        txtTaxNumber.setText(dgvClients.getValueAt(row, 2).toString());
+                        txtAddress.setText(dgvClients.getValueAt(row, 3).toString());
+                        txtPhoneNumber.setText(dgvClients.getValueAt(row, 4).toString());
+                    }
+                }
+            }
+        });
+    }
+
+    private void loadClients() {
+        DefaultTableModel model = (DefaultTableModel) dgvClients.getModel();
+        model.setRowCount(0);
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM Client");
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                model.addRow(new Object[]{
+                    rs.getInt("Code_Client"),
+                    rs.getString("Nom_Prenom"),
+                    rs.getString("Matricule_Fiscale"),
+                    rs.getString("Adresse"),
+                    rs.getString("Num_Telephone")
+                });
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void btnAddClient_Click() {
+        String fullName = txtFullName.getText().trim();
+        String taxNumber = txtTaxNumber.getText().trim();
+        String address = txtAddress.getText().trim();
+        String phoneNumber = txtPhoneNumber.getText().trim();
+
+        if (fullName.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please fill the full name!", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement("INSERT INTO Client (Nom_Prenom, Matricule_Fiscale, Adresse, Num_Telephone) VALUES (?, ?, ?, ?)")) {
+            pstmt.setString(1, fullName);
+            pstmt.setString(2, taxNumber);
+            pstmt.setString(3, address);
+            pstmt.setString(4, phoneNumber);
+            pstmt.executeUpdate();
+            loadClients();
+            clearFields();
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error adding client: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void btnEditClient_Click() {
+        int selectedRow = dgvClients.getSelectedRow();
+        if (selectedRow < 0) {
+            JOptionPane.showMessageDialog(this, "Please select a client to edit!", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        String fullName = txtFullName.getText().trim();
+        String taxNumber = txtTaxNumber.getText().trim();
+        String address = txtAddress.getText().trim();
+        String phoneNumber = txtPhoneNumber.getText().trim();
+        int codeClient = (int) dgvClients.getValueAt(selectedRow, 0);
+
+        if (fullName.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please fill the full name!", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement("UPDATE Client SET Nom_Prenom = ?, Matricule_Fiscale = ?, Adresse = ?, Num_Telephone = ? WHERE Code_Client = ?")) {
+            pstmt.setString(1, fullName);
+            pstmt.setString(2, taxNumber);
+            pstmt.setString(3, address);
+            pstmt.setString(4, phoneNumber);
+            pstmt.setInt(5, codeClient);
+            int rows = pstmt.executeUpdate();
+            if (rows > 0) {
+                loadClients();
+                clearFields();
+            } else {
+                JOptionPane.showMessageDialog(this, "Client not found!", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error editing client: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void btnDeleteClient_Click() {
+        int selectedRow = dgvClients.getSelectedRow();
+        if (selectedRow < 0) {
+            JOptionPane.showMessageDialog(this, "Please select a client to delete!", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        int codeClient = (int) dgvClients.getValueAt(selectedRow, 0);
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement("DELETE FROM Client WHERE Code_Client = ?")) {
+            pstmt.setInt(1, codeClient);
+            int rows = pstmt.executeUpdate();
+            if (rows > 0) {
+                loadClients();
+                clearFields();
+            } else {
+                JOptionPane.showMessageDialog(this, "Client not found!", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error deleting client: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void clearFields() {
+        txtFullName.setText("");
+        txtTaxNumber.setText("");
+        txtAddress.setText("");
+        txtPhoneNumber.setText("");
+    }
+}

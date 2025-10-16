@@ -1,0 +1,261 @@
+package com.gestionfacture;
+import java.awt.*;
+import javax.swing.*;
+import java.sql.*;
+import java.util.Vector;
+
+public class FactureWindow extends JFrame {
+    // Créer les champs comme variables globales
+    private JComboBox clientComboBox;
+    private JComboBox articleComboBox;
+    private JTextField qteField;
+    private JTextField remiseField;
+    private JTextArea displayArea;
+
+    public FactureWindow() {
+        // Définir la position et la taille de la fenêtre
+        this.setBounds(100, 20, 500, 400);
+        // Fermer la fenêtre quand on clique sur la croix
+        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        // Donner un titre à la fenêtre
+        this.setTitle("Gestion des Factures");
+
+        // Créer les labels (étiquettes)
+        JLabel l1 = new JLabel("Gestion des Factures");
+        JLabel l2 = new JLabel("Client:");
+        JLabel l3 = new JLabel("Article:");
+        JLabel l4 = new JLabel("Quantité:");
+        JLabel l5 = new JLabel("Remise:");
+
+        // Créer les champs
+        clientComboBox = new JComboBox();
+        articleComboBox = new JComboBox();
+        qteField = new JTextField(5);
+        remiseField = new JTextField(5);
+
+        // Remplir les ComboBox
+        loadClients();
+        loadArticles();
+
+        // Créer les boutons
+        JButton b1 = new JButton("Ajouter");
+        JButton b2 = new JButton("Afficher");
+
+        // Créer la zone d'affichage
+        displayArea = new JTextArea(10, 40);
+        JScrollPane scrollPane = new JScrollPane(displayArea);
+
+        // Créer des panneaux pour organiser les éléments
+        JPanel p1 = new JPanel();
+        p1.setLayout(new FlowLayout());
+        p1.add(l1);
+
+        JPanel p2 = new JPanel();
+        p2.setLayout(new FlowLayout());
+        p2.add(l2);
+
+        JPanel p3 = new JPanel();
+        p3.setLayout(new FlowLayout());
+        p3.add(clientComboBox);
+
+        JPanel p4 = new JPanel();
+        p4.setLayout(new FlowLayout());
+        p4.add(l3);
+
+        JPanel p5 = new JPanel();
+        p5.setLayout(new FlowLayout());
+        p5.add(articleComboBox);
+
+        JPanel p6 = new JPanel();
+        p6.setLayout(new FlowLayout());
+        p6.add(l4);
+
+        JPanel p7 = new JPanel();
+        p7.setLayout(new FlowLayout());
+        p7.add(qteField);
+
+        JPanel p8 = new JPanel();
+        p8.setLayout(new FlowLayout());
+        p8.add(l5);
+
+        JPanel p9 = new JPanel();
+        p9.setLayout(new FlowLayout());
+        p9.add(remiseField);
+
+        JPanel p10 = new JPanel();
+        p10.setLayout(new FlowLayout());
+        p10.add(b1);
+
+        JPanel p11 = new JPanel();
+        p11.setLayout(new FlowLayout());
+        p11.add(b2);
+
+        // Panneau pour organiser les champs
+        JPanel p12 = new JPanel();
+        p12.setLayout(new GridLayout(4, 2));
+        p12.add(p2);
+        p12.add(p3);
+        p12.add(p4);
+        p12.add(p5);
+        p12.add(p6);
+        p12.add(p7);
+        p12.add(p8);
+        p12.add(p9);
+
+        // Panneau pour organiser les boutons
+        JPanel p13 = new JPanel();
+        p13.setLayout(new GridLayout(1, 2));
+        p13.add(p10);
+        p13.add(p11);
+
+        // Panneau principal qui contient tout
+        JPanel p14 = new JPanel();
+        p14.setLayout(new GridLayout(3, 1));
+        p14.add(p1);
+        p14.add(p12);
+        p14.add(p13);
+
+        // Ajouter les panneaux à la fenêtre
+        this.setLayout(new BorderLayout());
+        this.add(p14, BorderLayout.NORTH);
+        this.add(scrollPane, BorderLayout.CENTER);
+
+        // Ajouter une action au bouton "Ajouter"
+        b1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                try {
+                    Connection conn = DatabaseConnection.getConnection();
+                    conn.setAutoCommit(false);
+
+                    // Insérer une nouvelle facture
+                    String sqlFacture = "INSERT INTO Facture (Date_Facture, Code_Client, Total_HTVA, Montant_TVA_Facture, Montant_HTVA_Facture, Creer_Par) VALUES (GETDATE(), ?, 0.0, 0.0, 0.0, 'admin')";
+                    PreparedStatement pstmtFacture = conn.prepareStatement(sqlFacture, Statement.RETURN_GENERATED_KEYS);
+                    pstmtFacture.setInt(1, Integer.parseInt(clientComboBox.getSelectedItem().toString()));
+                    pstmtFacture.executeUpdate();
+
+                    // Récupérer l'ID de la facture
+                    ResultSet generatedKeys = pstmtFacture.getGeneratedKeys();
+                    int numFacture = 0;
+                    if (generatedKeys.next()) {
+                        numFacture = generatedKeys.getInt(1);
+                    }
+
+                    // Calculer le totale HTVA
+                    int codeArticle = Integer.parseInt(articleComboBox.getSelectedItem().toString());
+                    int qte = Integer.parseInt(qteField.getText());
+                    double remise = Double.parseDouble(remiseField.getText());
+
+                    String sqlArticle = "SELECT PUHTVA, TVA FROM Article WHERE Code_Article = ?";
+                    PreparedStatement pstmtArticle = conn.prepareStatement(sqlArticle);
+                    pstmtArticle.setInt(1, codeArticle);
+                    ResultSet rsArticle = pstmtArticle.executeQuery();
+                    rsArticle.next();
+                    double puhtva = rsArticle.getDouble("PUHTVA");
+                    double tva = rsArticle.getDouble("TVA");
+
+                    double totaleHTVA = (puhtva * qte) - remise;
+
+                    // Insérer une ligne de facture
+                    String sqlLigne = "INSERT INTO Ligne_Facture (Num_Facture, Code_Article, Qte_Vendu, Remise, Totale_HTVA) VALUES (?, ?, ?, ?, ?)";
+                    PreparedStatement pstmtLigne = conn.prepareStatement(sqlLigne);
+                    pstmtLigne.setInt(1, numFacture);
+                    pstmtLigne.setInt(2, codeArticle);
+                    pstmtLigne.setInt(3, qte);
+                    pstmtLigne.setDouble(4, remise);
+                    pstmtLigne.setDouble(5, totaleHTVA);
+                    pstmtLigne.executeUpdate();
+
+                    // Mettre à jour la facture
+                    double montantTVA = totaleHTVA * (tva / 100);
+                    double montantHTVAFacture = totaleHTVA + montantTVA;
+                    String sqlUpdateFacture = "UPDATE Facture SET Total_HTVA = ?, Montant_TVA_Facture = ?, Montant_HTVA_Facture = ? WHERE Num_Facture = ?";
+                    PreparedStatement pstmtUpdate = conn.prepareStatement(sqlUpdateFacture);
+                    pstmtUpdate.setDouble(1, totaleHTVA);
+                    pstmtUpdate.setDouble(2, montantTVA);
+                    pstmtUpdate.setDouble(3, montantHTVAFacture);
+                    pstmtUpdate.setInt(4, numFacture);
+                    pstmtUpdate.executeUpdate();
+
+                    // Valider la transaction
+                    conn.commit();
+
+                    JOptionPane.showMessageDialog(null, "Facture ajoutée avec succès!");
+                    pstmtFacture.close();
+                    pstmtLigne.close();
+                    pstmtUpdate.close();
+                    conn.close();
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(null, "Erreur: " + ex.getMessage());
+                }
+            }
+        });
+
+        // Ajouter une action au bouton "Afficher"
+        b2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                try {
+                    Connection conn = DatabaseConnection.getConnection();
+                    Statement stmt = conn.createStatement();
+                    ResultSet rs = stmt.executeQuery("SELECT f.Num_Facture, f.Date_Facture, f.Code_Client, f.Montant_HTVA_Facture, lf.Code_Article, lf.Qte_Vendu, lf.Totale_HTVA " +
+                                                    "FROM Facture f JOIN Ligne_Facture lf ON f.Num_Facture = lf.Num_Facture");
+
+                    displayArea.setText("");
+                    while (rs.next()) {
+                        int numFacture = rs.getInt("Num_Facture");
+                        String date = rs.getString("Date_Facture");
+                        int codeClient = rs.getInt("Code_Client");
+                        double montant = rs.getDouble("Montant_HTVA_Facture");
+                        int codeArticle = rs.getInt("Code_Article");
+                        int qte = rs.getInt("Qte_Vendu");
+                        double totaleHTVA = rs.getDouble("Totale_HTVA");
+                        displayArea.append("Facture: " + numFacture + ", Date: " + date + ", Client: " + codeClient + ", Montant: " + montant +
+                                          ", Article: " + codeArticle + ", Quantité: " + qte + ", Totale HTVA: " + totaleHTVA + "\n");
+                    }
+
+                    rs.close();
+                    stmt.close();
+                    conn.close();
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(null, "Erreur: " + ex.getMessage());
+                }
+            }
+        });
+
+        // Afficher la fenêtre
+        this.show();
+    }
+
+    // Méthode pour charger les clients
+    private void loadClients() {
+        try {
+            Connection conn = DatabaseConnection.getConnection();
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT Code_Client FROM Client");
+            while (rs.next()) {
+                clientComboBox.addItem(rs.getInt("Code_Client"));
+            }
+            rs.close();
+            stmt.close();
+            conn.close();
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, "Erreur: " + ex.getMessage());
+        }
+    }
+
+    // Méthode pour charger les articles
+    private void loadArticles() {
+        try {
+            Connection conn = DatabaseConnection.getConnection();
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT Code_Article FROM Article");
+            while (rs.next()) {
+                articleComboBox.addItem(rs.getInt("Code_Article"));
+            }
+            rs.close();
+            stmt.close();
+            conn.close();
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, "Erreur: " + ex.getMessage());
+        }
+    }
+}

@@ -1,0 +1,339 @@
+package com.gestionfacture;
+
+import javax.swing.*;
+import java.awt.*;
+import java.sql.*;
+
+// Cette classe est la fenêtre principale de l'application
+public class MainWindow extends JFrame {
+
+    // Déclaration des panneaux (Panels)
+    private JPanel panelMenu; // Panneau latéral pour les boutons de navigation
+    private JPanel panelPrincipal; // Panneau principal pour afficher les sections
+    private JPanel panelConnexion; // Panneau pour la page de connexion
+    private JPanel panelAccueil; // Panneau pour la page d'accueil
+    private JPanel panelAPropos; // Panneau pour la page "À propos"
+
+    // Déclaration des boutons de navigation
+    private JButton btnAccueil; // Bouton pour la page d'accueil
+    private JButton btnClients; // Bouton pour gérer les clients
+    private JButton btnArticles; // Bouton pour gérer les articles
+    private JButton btnAPropos; // Bouton pour la page "À propos"
+    private JButton btnDeconnexion; // Bouton pour se déconnecter
+
+    // Déclaration des composants de la page de connexion
+    private JTextField txtNomUtilisateur; // Champ pour entrer le nom d'utilisateur
+    private JPasswordField txtMotDePasse; // Champ pour entrer le mot de passe
+    private JButton btnConnecter; // Bouton pour se connecter
+    private JButton btnAfficherMotDePasse; // Bouton pour afficher/masquer le mot de passe
+    private JLabel lblMessageErreur; // Label pour afficher les messages d'erreur
+
+    // Déclaration des autres panneaux (sections)
+    private ClientPanel panelClients; // Panneau pour gérer les clients
+    private ArticlePanel panelArticles; // Panneau pour gérer les articles
+
+    // Constructeur de la classe MainWindow
+    public MainWindow() {
+        initialiserComposants(); // Appelle la méthode pour initialiser les composants
+    }
+
+    // Méthode pour initialiser tous les composants de la fenêtre
+    private void initialiserComposants() {
+        setTitle("Menu Principal"); // Définit le titre de la fenêtre
+        setBounds(100, 20, 800, 600); // Définit la position et la taille de la fenêtre
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // Ferme l'application quand on clique sur la croix
+        getContentPane().setBackground(Color.WHITE); // Met le fond de la fenêtre en blanc
+        setLayout(new BorderLayout()); // Utilise BorderLayout pour organiser les panneaux
+
+        // Création du panneau latéral (Sidebar)
+        creerPanelMenu(); // Appelle la méthode pour créer le panneau latéral
+        add(panelMenu, BorderLayout.WEST); // Ajoute le panneau latéral à gauche
+
+        // Création du panneau principal
+        panelPrincipal = new JPanel(); // Crée un nouveau panneau principal
+        panelPrincipal.setBackground(Color.WHITE); // Met le fond du panneau principal en blanc
+        panelPrincipal.setLayout(new BorderLayout()); // Utilise BorderLayout pour organiser le contenu
+        add(panelPrincipal, BorderLayout.CENTER); // Ajoute le panneau principal au centre
+
+        // Création des autres panneaux
+        creerPanelAccueil(); // Crée le panneau de la page d'accueil
+        panelClients = new ClientPanel(); // Crée le panneau de gestion des clients
+        panelArticles = new ArticlePanel(); // Crée le panneau de gestion des articles
+        creerPanelAPropos(); // Crée le panneau de la page "À propos"
+
+        // Création et affichage de la page de connexion
+        afficherPanelConnexion(); // Affiche la page de connexion au démarrage
+        setVisible(true); // Rend la fenêtre visible
+    }
+
+    // Méthode pour créer le panneau latéral (Sidebar)
+    private void creerPanelMenu() {
+        panelMenu = new JPanel(); // Crée un nouveau panneau latéral
+        panelMenu.setPreferredSize(new Dimension(150, 600)); // Définit la largeur du panneau latéral
+        panelMenu.setBackground(Color.LIGHT_GRAY); // Met le fond du panneau en gris clair
+        panelMenu.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2)); // Ajoute une bordure noire
+        panelMenu.setLayout(new GridLayout(5, 1, 5, 5)); // Utilise GridLayout pour organiser les boutons (5 boutons)
+
+        // Création du bouton "Accueil"
+        btnAccueil = new JButton("Accueil"); // Crée le bouton "Accueil"
+        btnAccueil.setBackground(Color.WHITE); // Met le fond du bouton en blanc
+        btnAccueil.setForeground(Color.BLACK); // Met la couleur du texte en noir
+        btnAccueil.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1)); // Ajoute une bordure noire
+        btnAccueil.setEnabled(false); // Désactive le bouton au démarrage
+        btnAccueil.addActionListener(e -> btnAccueil_Click()); // Ajoute un écouteur pour le clic sur le bouton
+        panelMenu.add(btnAccueil); // Ajoute le bouton au panneau latéral
+
+        // Création du bouton "Gestion Client"
+        btnClients = new JButton("Gestion Client"); // Crée le bouton "Gestion Client"
+        btnClients.setBackground(Color.WHITE); // Met le fond du bouton en blanc
+        btnClients.setForeground(Color.BLACK); // Met la couleur du texte en noir
+        btnClients.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1)); // Ajoute une bordure noire
+        btnClients.setEnabled(false); // Désactive le bouton au démarrage
+        btnClients.addActionListener(e -> btnClients_Click()); // Ajoute un écouteur pour le clic sur le bouton
+        panelMenu.add(btnClients); // Ajoute le bouton au panneau latéral
+
+        // Création du bouton "Gestion Article"
+        btnArticles = new JButton("Gestion Article"); // Crée le bouton "Gestion Article"
+        btnArticles.setBackground(Color.WHITE); // Met le fond du bouton en blanc
+        btnArticles.setForeground(Color.BLACK); // Met la couleur du texte en noir
+        btnArticles.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1)); // Ajoute une bordure noire
+        btnArticles.setEnabled(false); // Désactive le bouton au démarrage
+        btnArticles.addActionListener(e -> btnArticles_Click()); // Ajoute un écouteur pour le clic sur le bouton
+        panelMenu.add(btnArticles); // Ajoute le bouton au panneau latéral
+
+        // Création du bouton "À propos"
+        btnAPropos = new JButton("À propos"); // Crée le bouton "À propos"
+        btnAPropos.setBackground(Color.WHITE); // Met le fond du bouton en blanc
+        btnAPropos.setForeground(Color.BLACK); // Met la couleur du texte en noir
+        btnAPropos.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1)); // Ajoute une bordure noire
+        btnAPropos.setEnabled(false); // Désactive le bouton au démarrage
+        btnAPropos.addActionListener(e -> btnAPropos_Click()); // Ajoute un écouteur pour le clic sur le bouton
+        panelMenu.add(btnAPropos); // Ajoute le bouton au panneau latéral
+
+        // Création du bouton "Déconnexion"
+        btnDeconnexion = new JButton("Déconnexion"); // Crée le bouton "Déconnexion"
+        btnDeconnexion.setBackground(Color.WHITE); // Met le fond du bouton en blanc
+        btnDeconnexion.setForeground(Color.BLACK); // Met la couleur du texte en noir
+        btnDeconnexion.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1)); // Ajoute une bordure noire
+        btnDeconnexion.setEnabled(false); // Désactive le bouton au démarrage
+        btnDeconnexion.addActionListener(e -> btnDeconnexion_Click()); // Ajoute un écouteur pour le clic sur le bouton
+        panelMenu.add(btnDeconnexion); // Ajoute le bouton au panneau latéral
+    }
+
+    // Méthode pour créer le panneau de la page d'accueil
+    private void creerPanelAccueil() {
+        panelAccueil = new JPanel(); // Crée un nouveau panneau pour la page d'accueil
+        panelAccueil.setBackground(Color.WHITE); // Met le fond du panneau en blanc
+        panelAccueil.setLayout(new GridLayout(3, 1)); // Utilise GridLayout pour organiser les labels
+
+        // Création du label de titre
+        JLabel labelTitre = new JLabel("Gestion Facture"); // Crée un label pour le titre
+        labelTitre.setFont(new Font("Arial", Font.BOLD, 18)); // Définit la police et la taille du texte
+        labelTitre.setForeground(Color.BLUE); // Met la couleur du texte en bleu
+        labelTitre.setHorizontalAlignment(SwingConstants.CENTER); // Centre le texte
+        panelAccueil.add(labelTitre); // Ajoute le label au panneau
+
+        // Création du label de sous-titre
+        JLabel labelSousTitre = new JLabel("Gestion de Facturation - Simplifiez Vos Transactions !"); // Crée un label pour le sous-titre
+        labelSousTitre.setFont(new Font("Arial", Font.PLAIN, 14)); // Définit la police et la taille du texte
+        labelSousTitre.setHorizontalAlignment(SwingConstants.CENTER); // Centre le texte
+        panelAccueil.add(labelSousTitre); // Ajoute le label au panneau
+
+        // Création du label de description
+        JLabel labelDescription = new JLabel("Bienvenue dans votre système de gestion de facturation."); // Crée un label pour la description
+        labelDescription.setFont(new Font("Arial", Font.PLAIN, 12)); // Définit la police et la taille du texte
+        labelDescription.setHorizontalAlignment(SwingConstants.CENTER); // Centre le texte
+        panelAccueil.add(labelDescription); // Ajoute le label au panneau
+    }
+
+    // Méthode pour créer le panneau de la page "À propos"
+    private void creerPanelAPropos() {
+        panelAPropos = new JPanel(); // Crée un nouveau panneau pour la page "À propos"
+        panelAPropos.setBackground(Color.WHITE); // Met le fond du panneau en blanc
+        panelAPropos.setLayout(new GridLayout(1, 1)); // Utilise GridLayout pour organiser le contenu
+
+        // Création du label de la page "À propos"
+        JLabel labelAPropos = new JLabel("Application de gestion de factures - Version 1.0"); // Crée un label pour le texte
+        labelAPropos.setFont(new Font("Arial", Font.BOLD, 16)); // Définit la police et la taille du texte
+        labelAPropos.setHorizontalAlignment(SwingConstants.CENTER); // Centre le texte
+        panelAPropos.add(labelAPropos); // Ajoute le label au panneau
+    }
+
+    // Méthode pour créer et afficher la page de connexion
+    private void afficherPanelConnexion() {
+        panelConnexion = new JPanel(); // Crée un nouveau panneau pour la page de connexion
+        panelConnexion.setBackground(Color.WHITE); // Met le fond du panneau en blanc
+        panelConnexion.setLayout(new BorderLayout()); // Utilise BorderLayout pour centrer le contenu
+
+        // Créer un sous-panneau pour regrouper les composants de connexion
+        JPanel loginContentPanel = new JPanel(); // Crée un panneau pour regrouper les champs de connexion
+        loginContentPanel.setBackground(Color.WHITE); // Fond blanc
+        loginContentPanel.setLayout(new GridLayout(4, 1, 5, 5)); // Utilise GridLayout pour organiser les champs verticalement
+        loginContentPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Ajoute un peu de padding
+
+        // Création du champ pour le nom d'utilisateur
+        JPanel panelNomUtilisateur = new JPanel(new FlowLayout(FlowLayout.CENTER)); // Crée un panneau pour le champ de nom d'utilisateur
+        panelNomUtilisateur.setBackground(Color.WHITE); // Fond blanc
+        JLabel lblNomUtilisateur = new JLabel("Nom d'utilisateur: "); // Crée un label pour le nom d'utilisateur
+        lblNomUtilisateur.setForeground(Color.GRAY); // Met la couleur du texte en gris
+        txtNomUtilisateur = new JTextField(); // Crée un champ texte pour entrer le nom d'utilisateur
+        txtNomUtilisateur.setPreferredSize(new Dimension(150, 25)); // Définit une taille pour le champ
+        panelNomUtilisateur.add(lblNomUtilisateur); // Ajoute le label au panneau
+        panelNomUtilisateur.add(txtNomUtilisateur); // Ajoute le champ texte au panneau
+        loginContentPanel.add(panelNomUtilisateur); // Ajoute le panneau au sous-panneau
+
+        // Création du champ pour le mot de passe
+        JPanel panelMotDePasse = new JPanel(new FlowLayout(FlowLayout.CENTER)); // Crée un panneau pour le champ de mot de passe
+        panelMotDePasse.setBackground(Color.WHITE); // Fond blanc
+        JLabel lblMotDePasse = new JLabel("Mot de passe: "); // Crée un label pour le mot de passe
+        lblMotDePasse.setForeground(Color.GRAY); // Met la couleur du texte en gris
+        txtMotDePasse = new JPasswordField(); // Crée un champ texte pour entrer le mot de passe
+        txtMotDePasse.setPreferredSize(new Dimension(150, 25)); // Définit une taille pour le champ
+        btnAfficherMotDePasse = new JButton("Afficher"); // Crée un bouton pour afficher/masquer le mot de passe
+        btnAfficherMotDePasse.setPreferredSize(new Dimension(80, 25)); // Définit une taille pour le bouton
+        btnAfficherMotDePasse.addActionListener(e -> afficherMasquerMotDePasse()); // Ajoute un écouteur pour le bouton
+        panelMotDePasse.add(lblMotDePasse); // Ajoute le label au panneau
+        panelMotDePasse.add(txtMotDePasse); // Ajoute le champ texte au panneau
+        panelMotDePasse.add(btnAfficherMotDePasse); // Ajoute le bouton au panneau
+        loginContentPanel.add(panelMotDePasse); // Ajoute le panneau au sous-panneau
+
+        // Création du label pour les messages d'erreur
+        lblMessageErreur = new JLabel(""); // Crée un label pour afficher les messages d'erreur
+        lblMessageErreur.setForeground(Color.RED); // Met la couleur du texte en rouge
+        lblMessageErreur.setHorizontalAlignment(SwingConstants.CENTER); // Centre le texte
+        loginContentPanel.add(lblMessageErreur); // Ajoute le label au sous-panneau
+
+        // Création du bouton de connexion
+        JPanel panelBtnConnecter = new JPanel(new FlowLayout(FlowLayout.CENTER)); // Crée un panneau pour le bouton "Se connecter"
+        panelBtnConnecter.setBackground(Color.WHITE); // Fond blanc
+        btnConnecter = new JButton("Se connecter"); // Crée un bouton pour se connecter
+        btnConnecter.setBackground(Color.BLUE); // Met le fond du bouton en bleu
+        btnConnecter.setForeground(Color.WHITE); // Met la couleur du texte en blanc
+        btnConnecter.setPreferredSize(new Dimension(120, 30)); // Définit une taille pour le bouton
+        btnConnecter.addActionListener(e -> btnConnecter_Click()); // Ajoute un écouteur pour le clic sur le bouton
+        panelBtnConnecter.add(btnConnecter); // Ajoute le bouton au panneau
+        loginContentPanel.add(panelBtnConnecter); // Ajoute le panneau au sous-panneau
+
+        // Ajouter le sous-panneau au centre du panelConnexion
+        panelConnexion.add(loginContentPanel, BorderLayout.CENTER); // Centre le contenu dans le panneau de connexion
+
+        // Affichage du panneau de connexion
+        panelPrincipal.removeAll(); // Supprime tout le contenu actuel du panneau principal
+        panelPrincipal.add(panelConnexion, BorderLayout.CENTER); // Ajoute le panneau de connexion au centre
+        panelPrincipal.revalidate(); // Met à jour l'affichage du panneau principal
+        panelPrincipal.repaint(); // Redessine le panneau principal
+    }
+
+    // Méthode pour afficher/masquer le mot de passe
+    private void afficherMasquerMotDePasse() {
+        if (txtMotDePasse.getEchoChar() == '•') { // Vérifie si le mot de passe est masqué
+            txtMotDePasse.setEchoChar((char) 0); // Affiche le mot de passe
+            btnAfficherMotDePasse.setText("Masquer"); // Change le texte du bouton en "Masquer"
+        } else {
+            txtMotDePasse.setEchoChar('•'); // Masque le mot de passe
+            btnAfficherMotDePasse.setText("Afficher"); // Change le texte du bouton en "Afficher"
+        }
+    }
+
+    // Méthode appelée quand on clique sur le bouton "Se connecter"
+    private void btnConnecter_Click() {
+        String nomUtilisateur = txtNomUtilisateur.getText().trim(); // Récupère le nom d'utilisateur entré
+        String motDePasse = new String(txtMotDePasse.getPassword()).trim(); // Récupère le mot de passe entré
+
+        if (nomUtilisateur.isEmpty() || motDePasse.isEmpty()) { // Vérifie si les champs sont vides
+            lblMessageErreur.setText("Veuillez remplir tous les champs !"); // Affiche un message d'erreur
+            return; // Arrête la méthode
+        }
+
+        try {
+            Connection conn = DatabaseConnection.getConnection(); // Ouvre une connexion à la base de données
+            Statement stmt = conn.createStatement(); // Crée un objet pour exécuter des requêtes SQL
+            String query = "SELECT * FROM Utilisateur WHERE Login = '" + nomUtilisateur + "' AND Password = '" + motDePasse + "'"; // Crée la requête SQL
+            ResultSet rs = stmt.executeQuery(query); // Exécute la requête et récupère les résultats
+            if (rs.next()) { // Vérifie si un utilisateur correspondant existe
+                lblMessageErreur.setText(""); // Efface le message d'erreur
+                activerBoutons(); // Active les boutons de navigation
+                btnAccueil_Click(); // Affiche la page d'accueil
+            } else {
+                lblMessageErreur.setText("Nom d'utilisateur ou mot de passe incorrect !"); // Affiche un message d'erreur
+            }
+            rs.close(); // Ferme le résultat
+            stmt.close(); // Ferme l'objet de requête
+            conn.close(); // Ferme la connexion
+        } catch (SQLException e) { // Capture les erreurs de la base de données
+            lblMessageErreur.setText("Erreur de connexion à la base de données !"); // Affiche un message d'erreur
+            e.printStackTrace(); // Affiche les détails de l'erreur dans la console
+        }
+    }
+
+    // Méthode appelée quand on clique sur le bouton "Accueil"
+    private void btnAccueil_Click() {
+        panelPrincipal.removeAll(); // Supprime tout le contenu actuel du panneau principal
+        panelPrincipal.add(panelAccueil, BorderLayout.CENTER); // Ajoute le panneau de la page d'accueil
+        panelPrincipal.revalidate(); // Met à jour l'affichage du panneau principal
+        panelPrincipal.repaint(); // Redessine le panneau principal
+    }
+
+    // Méthode appelée quand on clique sur le bouton "Gestion Client"
+    private void btnClients_Click() {
+        panelPrincipal.removeAll(); // Supprime tout le contenu actuel du panneau principal
+        panelClients.chargerClients(); // Recharge les données des clients
+        panelPrincipal.add(panelClients, BorderLayout.CENTER); // Ajoute le panneau de gestion des clients
+        panelPrincipal.revalidate(); // Met à jour l'affichage du panneau principal
+        panelPrincipal.repaint(); // Redessine le panneau principal
+    }
+
+    // Méthode appelée quand on clique sur le bouton "Gestion Article"
+    private void btnArticles_Click() {
+        panelPrincipal.removeAll(); // Supprime tout le contenu actuel du panneau principal
+        panelArticles.chargerArticles(); // Recharge les données des articles
+        panelPrincipal.add(panelArticles, BorderLayout.CENTER); // Ajoute le panneau de gestion des articles
+        panelPrincipal.revalidate(); // Met à jour l'affichage du panneau principal
+        panelPrincipal.repaint(); // Redessine le panneau principal
+    }
+
+    // Méthode appelée quand on clique sur le bouton "À propos"
+    private void btnAPropos_Click() {
+        panelPrincipal.removeAll(); // Supprime tout le contenu actuel du panneau principal
+        panelPrincipal.add(panelAPropos, BorderLayout.CENTER); // Ajoute le panneau de la page "À propos"
+        panelPrincipal.revalidate(); // Met à jour l'affichage du panneau principal
+        panelPrincipal.repaint(); // Redessine le panneau principal
+    }
+
+    // Méthode appelée quand on clique sur le bouton "Déconnexion"
+    private void btnDeconnexion_Click() {
+        int choix = JOptionPane.showConfirmDialog(this, "Êtes-vous sûr de vouloir vous déconnecter ?", "Déconnexion", JOptionPane.YES_NO_OPTION); // Affiche une fenêtre de confirmation
+        if (choix == JOptionPane.YES_OPTION) { // Si l'utilisateur choisit "Oui"
+            desactiverBoutons(); // Désactive tous les boutons de navigation
+            afficherPanelConnexion(); // Affiche la page de connexion
+            txtNomUtilisateur.setText(""); // Vide le champ du nom d'utilisateur
+            txtMotDePasse.setText(""); // Vide le champ du mot de passe
+            lblMessageErreur.setText(""); // Efface le message d'erreur
+            btnAfficherMotDePasse.setText("Afficher"); // Remet le texte du bouton "Afficher"
+            txtMotDePasse.setEchoChar('•'); // Masque le mot de passe
+        }
+    }
+
+    // Méthode pour activer les boutons de navigation
+    private void activerBoutons() {
+        btnAccueil.setEnabled(true); // Active le bouton "Accueil"
+        btnClients.setEnabled(true); // Active le bouton "Gestion Client"
+        btnArticles.setEnabled(true); // Active le bouton "Gestion Article"
+        btnAPropos.setEnabled(true); // Active le bouton "À propos"
+        btnDeconnexion.setEnabled(true); // Active le bouton "Déconnexion"
+    }
+
+    // Méthode pour désactiver les boutons de navigation
+    private void desactiverBoutons() {
+        btnAccueil.setEnabled(false); // Désactive le bouton "Accueil"
+        btnClients.setEnabled(false); // Désactive le bouton "Gestion Client"
+        btnArticles.setEnabled(false); // Désactive le bouton "Gestion Article"
+        btnAPropos.setEnabled(false); // Désactive le bouton "À propos"
+        btnDeconnexion.setEnabled(false); // Désactive le bouton "Déconnexion"
+    }
+
+    // Méthode principale pour lancer l'application
+    public static void main(String[] args) {
+        new MainWindow(); // Crée une nouvelle fenêtre principale
+    }
+}

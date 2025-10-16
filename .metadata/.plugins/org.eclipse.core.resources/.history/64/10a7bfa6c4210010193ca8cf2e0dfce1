@@ -1,0 +1,124 @@
+package com.gestionfacture;
+
+import javax.swing.*;
+import java.awt.*;
+
+// Classe pour le panneau de gestion des utilisateurs
+public class UserPanel extends JPanel {
+
+    // Déclaration des éléments de l'interface
+    private JTable tableUsers; // Tableau pour afficher les utilisateurs
+    private JTextField txtUsername; // Champ pour le nom d'utilisateur
+    private JTextField txtPassword; // Champ pour le mot de passe
+    private JTextField txtRole; // Champ pour le rôle (Admin/Utilisateur)
+    private JButton btnAjouter; // Bouton pour ajouter un utilisateur
+    private JButton btnModifier; // Bouton pour modifier un utilisateur
+    private JButton btnSupprimer; // Bouton pour supprimer un utilisateur
+    private JLabel lblUsername; // Label pour "Nom d'utilisateur"
+    private JLabel lblPassword; // Label pour "Mot de passe"
+    private JLabel lblRole; // Label pour "Rôle"
+
+    // Constructeur
+    public UserPanel() {
+        initializeComponents(); // Appelle la méthode pour créer les éléments
+    }
+
+    // Méthode pour créer tous les éléments du panneau
+    private void initializeComponents() {
+        setBounds(0, 0, 1482, 688); // Taille pour remplir mainPanel
+        setBackground(Color.WHITE); // Fond blanc
+        setLayout(null); // Positionnement manuel
+
+        // Label pour "Nom d'utilisateur"
+        lblUsername = new JLabel("Nom d'utilisateur");
+        lblUsername.setBounds(20, 20, 100, 25); // Position et taille
+        lblUsername.setFont(new Font("Arial", Font.PLAIN, 12)); // Police
+        add(lblUsername);
+
+        // Champ pour le nom d'utilisateur
+        txtUsername = new JTextField();
+        txtUsername.setBounds(120, 20, 200, 25); // Position et taille
+        txtUsername.setFont(new Font("Arial", Font.PLAIN, 12)); // Police
+        add(txtUsername);
+
+        // Label pour "Mot de passe"
+        lblPassword = new JLabel("Mot de passe");
+        lblPassword.setBounds(20, 60, 100, 25); // Position et taille
+        lblPassword.setFont(new Font("Arial", Font.PLAIN, 12)); // Police
+        add(lblPassword);
+
+        // Champ pour le mot de passe
+        txtPassword = new JTextField();
+        txtPassword.setBounds(120, 60, 200, 25); // Position et taille
+        txtPassword.setFont(new Font("Arial", Font.PLAIN, 12)); // Police
+        add(txtPassword);
+
+        // Label pour "Rôle"
+        lblRole = new JLabel("Rôle");
+        lblRole.setBounds(20, 100, 100, 25); // Position et taille
+        lblRole.setFont(new Font("Arial", Font.PLAIN, 12)); // Police
+        add(lblRole);
+
+        // Champ pour le rôle
+        txtRole = new JTextField();
+        txtRole.setBounds(120, 100, 200, 25); // Position et taille
+        txtRole.setFont(new Font("Arial", Font.PLAIN, 12)); // Police
+        add(txtRole);
+
+        // Bouton "Ajouter"
+        btnAjouter = new JButton("Ajouter");
+        btnAjouter.setBounds(350, 20, 100, 30); // Position et taille
+        btnAjouter.setBackground(Color.GREEN); // Fond vert
+        btnAjouter.setForeground(Color.WHITE); // Texte blanc
+        btnAjouter.setFont(new Font("Arial", Font.BOLD, 12)); // Police
+        btnAjouter.setBorder(null); // Pas de bordure
+        btnAjouter.addActionListener(e -> btnAjouter_Click()); // Action quand on clique
+        add(btnAjouter);
+
+        // Bouton "Modifier"
+        btnModifier = new JButton("Modifier");
+        btnModifier.setBounds(350, 60, 100, 30); // Position et taille
+        btnModifier.setBackground(Color.BLUE); // Fond bleu
+        btnModifier.setForeground(Color.WHITE); // Texte blanc
+        btnModifier.setFont(new Font("Arial", Font.BOLD, 12)); // Police
+        btnModifier.setBorder(null); // Pas de bordure
+        btnModifier.addActionListener(e -> btnModifier_Click()); // Action quand on clique
+        add(btnModifier);
+
+        // Bouton "Supprimer"
+        btnSupprimer = new JButton("Supprimer");
+        btnSupprimer.setBounds(350, 100, 100, 30); // Position et taille
+        btnSupprimer.setBackground(Color.RED); // Fond rouge
+        btnSupprimer.setForeground(Color.WHITE); // Texte blanc
+        btnSupprimer.setFont(new Font("Arial", Font.BOLD, 12)); // Police
+        btnSupprimer.setBorder(null); // Pas de bordure
+        btnSupprimer.addActionListener(e -> btnSupprimer_Click()); // Action quand on clique
+        add(btnSupprimer);
+
+        // Tableau pour afficher les utilisateurs
+        String[] columns = {"ID", "Nom d'utilisateur", "Mot de passe", "Rôle"}; // Colonnes du tableau
+        String[][] data = {{"", "", "", ""}}; // Données vides pour l'instant
+        tableUsers = new JTable(data, columns);
+        JScrollPane scrollPane = new JScrollPane(tableUsers);
+        scrollPane.setBounds(20, 150, 1400, 500); // Position et taille
+        add(scrollPane);
+    }
+
+    // Action pour le bouton "Ajouter"
+    private void btnAjouter_Click() {
+        // Code pour ajouter un utilisateur (à connecter à la base de données)
+        JOptionPane.showMessageDialog(this, "Utilisateur ajouté (fonctionnalité à implémenter)!");
+    }
+
+    // Action pour le bouton "Modifier"
+    private void btnModifier_Click() {
+        // Code pour modifier un utilisateur (à connecter à la base de données)
+        JOptionPane.showMessageDialog(this, "Utilisateur modifié (fonctionnalité à implémenter)!");
+    }
+
+    // Action pour le bouton "Supprimer"
+    private void btnSupprimer_Click() {
+        // Code pour supprimer un utilisateur (à connecter à la base de données)
+        JOptionPane.showMessageDialog(this, "Utilisateur supprimé (fonctionnalité à implémenter)!");
+    }
+}

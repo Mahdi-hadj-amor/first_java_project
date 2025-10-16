@@ -1,0 +1,203 @@
+package com.gestionfacture;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+// Cette classe est le panneau pour gérer les utilisateurs
+public class UserPanel extends JPanel {
+
+    private JTable tableUsers; // Tableau pour afficher les utilisateurs
+    private JLabel lblNote; // Label pour afficher une note/instruction
+
+    // Constructeur de la classe UserPanel
+    public UserPanel() {
+        initializeComponents(); // Appelle la méthode pour initialiser les composants
+        loadUsers(); // Charge les utilisateurs depuis la base de données
+    }
+
+    // Méthode pour initialiser les composants du panneau
+    private void initializeComponents() {
+        setBackground(Color.WHITE); // Met le fond du panneau en blanc
+        setLayout(new BorderLayout(10, 10)); // Utilise BorderLayout pour organiser les éléments
+
+        // Création du tableau des utilisateurs
+        String[] columnNames = {"Login", "Mot de passe", "Type Utilisateur"}; // Noms des colonnes du tableau
+        DefaultTableModel model = new DefaultTableModel(columnNames, 0) { // Crée un modèle pour le tableau
+            @Override
+            public boolean isCellEditable(int row, int column) { // Définit quelles cellules peuvent être modifiées
+                if (column == 0) { // Si c'est la colonne "Login" (index 0)
+                    String login = getValueAt(row, 0) != null ? getValueAt(row, 0).toString() : ""; // Récupère la valeur de "Login"
+                    return login.isEmpty(); // Autorise la modification si "Login" est vide (nouvel utilisateur)
+                }
+                return true; // Autorise la modification pour les autres colonnes
+            }
+        };
+        tableUsers = new JTable(model); // Crée un tableau avec le modèle
+        tableUsers.setRowHeight(25); // Définit la hauteur des lignes du tableau
+
+        // Centre le texte dans les cellules du tableau
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer(); // Crée un renderer pour centrer le texte
+        centerRenderer.setHorizontalAlignment(JLabel.CENTER); // Centre le texte horizontalement
+        for (int i = 0; i < tableUsers.getColumnCount(); i++) { // Parcourt toutes les colonnes du tableau
+            tableUsers.getColumnModel().getColumn(i).setCellRenderer(centerRenderer); // Applique le renderer à chaque colonne
+        }
+
+        // Ajoute une liste déroulante pour la colonne "Type Utilisateur"
+        JComboBox<String> roleComboBox = new JComboBox<>(new String[]{"Admin", "User"}); // Crée une liste déroulante avec "Admin" et "User"
+        tableUsers.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(roleComboBox)); // Applique la liste déroulante à la colonne "Type Utilisateur"
+
+        // Ajoute le tableau à un panneau avec défilement
+        JScrollPane scrollPane = new JScrollPane(tableUsers); // Crée un panneau avec défilement pour le tableau
+        add(scrollPane, BorderLayout.CENTER); // Ajoute le tableau au centre du panneau
+
+        // Création du label pour la note
+        lblNote = new JLabel("* Clic droit pour ajouter/supprimer un utilisateur. Modifier les cellules directement."); // Crée un label pour la note
+        lblNote.setForeground(Color.RED); // Met la couleur du texte en rouge
+        lblNote.setHorizontalAlignment(SwingConstants.CENTER); // Centre le texte
+        add(lblNote, BorderLayout.SOUTH); // Ajoute le label en bas du panneau
+
+        // Ajoute un écouteur pour sauvegarder les modifications dans la base de données
+        tableUsers.getModel().addTableModelListener(e -> { // Ajoute un écouteur pour les modifications du tableau
+            int row = e.getFirstRow(); // Récupère la ligne modifiée
+            int column = e.getColumn(); // Récupère la colonne modifiée
+            if (row >= 0 && column >= 0) { // Vérifie si la ligne et la colonne sont valides
+                DefaultTableModel modelData = (DefaultTableModel) tableUsers.getModel(); // Récupère le modèle du tableau
+                String login = modelData.getValueAt(row, 0) != null ? modelData.getValueAt(row, 0).toString() : ""; // Récupère la valeur de "Login"
+                String password = modelData.getValueAt(row, 1) != null ? modelData.getValueAt(row, 1).toString() : ""; // Récupère la valeur de "Mot de passe"
+                String userType = modelData.getValueAt(row, 2) != null ? modelData.getValueAt(row, 2).toString() : "Admin"; // Récupère la valeur de "Type Utilisateur"
+
+                boolean isNewUser = false; // Variable pour vérifier si c'est un nouvel utilisateur
+                try (Connection conn = DatabaseConnection.getConnection(); // Ouvre une connexion à la base de données
+                     PreparedStatement pstmt = conn.prepareStatement("SELECT COUNT(*) FROM Utilisateur WHERE Login = ?")) { // Requête pour vérifier si le login existe
+                    pstmt.setString(1, login); // Définit le login dans la requête
+                    ResultSet rs = pstmt.executeQuery(); // Exécute la requête
+                    if (rs.next() && rs.getInt(1) == 0) { // Vérifie si le login n'existe pas
+                        isNewUser = true; // C'est un nouvel utilisateur
+                    }
+                } catch (SQLException ex) { // Capture les erreurs de la base de données
+                    JOptionPane.showMessageDialog(this, "Erreur lors de la vérification de l'utilisateur : " + ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+                }
+
+                if (isNewUser && !login.isEmpty()) { // Si c'est un nouvel utilisateur et le login n'est pas vide
+                    try (Connection conn = DatabaseConnection.getConnection(); // Ouvre une connexion à la base de données
+                         PreparedStatement pstmt = conn.prepareStatement("INSERT INTO Utilisateur (Login, Password, Type_Utilisateur) VALUES (?, ?, ?)")) { // Requête pour ajouter un utilisateur
+                        pstmt.setString(1, login); // Définit le login dans la requête
+                        pstmt.setString(2, password); // Définit le mot de passe dans la requête
+                        pstmt.setString(3, userType); // Définit le type d'utilisateur dans la requête
+                        pstmt.executeUpdate(); // Exécute la requête pour ajouter l'utilisateur
+                        loadUsers(); // Recharge la liste des utilisateurs
+                    } catch (SQLException ex) { // Capture les erreurs de la base de données
+                        JOptionPane.showMessageDialog(this, "Erreur lors de l'ajout de l'utilisateur : " + ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+                    }
+                } else if (!isNewUser) { // Si ce n'est pas un nouvel utilisateur
+                    updateUserInDatabase(login, password, userType); // Met à jour l'utilisateur existant
+                }
+            }
+        });
+
+        // Ajoute un menu contextuel (clic droit) pour ajouter/supprimer des utilisateurs
+        JPopupMenu popupMenu = new JPopupMenu(); // Crée un menu contextuel
+        JMenuItem addMenuItem = new JMenuItem("Ajouter un utilisateur"); // Crée une option pour ajouter un utilisateur
+        JMenuItem deleteMenuItem = new JMenuItem("Supprimer l'utilisateur"); // Crée une option pour supprimer un utilisateur
+
+        addMenuItem.addActionListener(e -> addNewUser()); // Ajoute un écouteur pour l'option "Ajouter"
+        deleteMenuItem.addActionListener(e -> deleteSelectedUser()); // Ajoute un écouteur pour l'option "Supprimer"
+
+        popupMenu.add(addMenuItem); // Ajoute l'option "Ajouter" au menu contextuel
+        popupMenu.add(deleteMenuItem); // Ajoute l'option "Supprimer" au menu contextuel
+
+        tableUsers.addMouseListener(new MouseAdapter() { // Ajoute un écouteur pour les clics sur le tableau
+            @Override
+            public void mousePressed(MouseEvent e) { // Méthode appelée quand on clique sur le tableau
+                if (SwingUtilities.isRightMouseButton(e)) { // Vérifie si c'est un clic droit
+                    int row = tableUsers.rowAtPoint(e.getPoint()); // Récupère la ligne cliquée
+                    if (row >= 0) { // Vérifie si une ligne a été cliquée
+                        tableUsers.setRowSelectionInterval(row, row); // Sélectionne la ligne cliquée
+                    }
+                    popupMenu.show(tableUsers, e.getX(), e.getY()); // Affiche le menu contextuel à l'endroit du clic
+                }
+            }
+        });
+    }
+
+    // Méthode pour charger les utilisateurs depuis la base de données
+    private void loadUsers() {
+        DefaultTableModel model = (DefaultTableModel) tableUsers.getModel(); // Récupère le modèle du tableau
+        model.setRowCount(0); // Vide le tableau
+
+        try (Connection conn = DatabaseConnection.getConnection(); // Ouvre une connexion à la base de données
+             PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM Utilisateur"); // Requête pour récupérer tous les utilisateurs
+             ResultSet rs = pstmt.executeQuery()) { // Exécute la requête et récupère les résultats
+            while (rs.next()) { // Parcourt tous les utilisateurs
+                model.addRow(new Object[]{ // Ajoute une ligne au tableau
+                    rs.getString("Login"), // Récupère le login
+                    rs.getString("Password"), // Récupère le mot de passe
+                    rs.getString("Type_Utilisateur") // Récupère le type d'utilisateur
+                });
+            }
+        } catch (SQLException e) { // Capture les erreurs de la base de données
+            JOptionPane.showMessageDialog(this, "Erreur lors du chargement des utilisateurs : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+        }
+    }
+
+    // Méthode pour ajouter un nouvel utilisateur
+    private void addNewUser() {
+        DefaultTableModel model = (DefaultTableModel) tableUsers.getModel(); // Récupère le modèle du tableau
+        model.addRow(new Object[]{"", "", "Admin"}); // Ajoute une nouvelle ligne vide avec "Admin" par défaut
+        int newRow = model.getRowCount() - 1; // Récupère l'index de la nouvelle ligne
+        tableUsers.setRowSelectionInterval(newRow, newRow); // Sélectionne la nouvelle ligne
+        tableUsers.editCellAt(newRow, 0); // Permet de modifier la colonne "Login" de la nouvelle ligne
+    }
+
+    // Méthode pour supprimer un utilisateur sélectionné
+    private void deleteSelectedUser() {
+        int selectedRow = tableUsers.getSelectedRow(); // Récupère la ligne sélectionnée
+        if (selectedRow < 0) { // Vérifie si une ligne est sélectionnée
+            JOptionPane.showMessageDialog(this, "Veuillez sélectionner un utilisateur à supprimer !", "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+            return; // Arrête la méthode
+        }
+
+        String username = tableUsers.getValueAt(selectedRow, 0).toString(); // Récupère le login de l'utilisateur sélectionné
+        if (username.isEmpty()) { // Vérifie si le login est vide
+            ((DefaultTableModel) tableUsers.getModel()).removeRow(selectedRow); // Supprime la ligne du tableau
+            return; // Arrête la méthode
+        }
+
+        try (Connection conn = DatabaseConnection.getConnection(); // Ouvre une connexion à la base de données
+             PreparedStatement pstmt = conn.prepareStatement("DELETE FROM Utilisateur WHERE Login = ?")) { // Requête pour supprimer l'utilisateur
+            pstmt.setString(1, username); // Définit le login dans la requête
+            int rows = pstmt.executeUpdate(); // Exécute la requête et récupère le nombre de lignes affectées
+            if (rows > 0) { // Vérifie si la suppression a réussi
+                loadUsers(); // Recharge la liste des utilisateurs
+            } else {
+                JOptionPane.showMessageDialog(this, "Utilisateur introuvable !", "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+            }
+        } catch (SQLException e) { // Capture les erreurs de la base de données
+            JOptionPane.showMessageDialog(this, "Erreur lors de la suppression : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+        }
+    }
+
+    // Méthode pour mettre à jour un utilisateur dans la base de données
+    private void updateUserInDatabase(String login, String password, String userType) {
+        try (Connection conn = DatabaseConnection.getConnection(); // Ouvre une connexion à la base de données
+             PreparedStatement pstmt = conn.prepareStatement("UPDATE Utilisateur SET Password = ?, Type_Utilisateur = ? WHERE Login = ?")) { // Requête pour mettre à jour l'utilisateur
+            pstmt.setString(1, password); // Définit le mot de passe dans la requête
+            pstmt.setString(2, userType); // Définit le type d'utilisateur dans la requête
+            pstmt.setString(3, login); // Définit le login dans la requête
+            int rows = pstmt.executeUpdate(); // Exécute la requête et récupère le nombre de lignes affectées
+            if (rows == 0) { // Vérifie si la mise à jour a échoué
+                JOptionPane.showMessageDialog(this, "Utilisateur introuvable !", "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+            }
+        } catch (SQLException e) { // Capture les erreurs de la base de données
+            JOptionPane.showMessageDialog(this, "Erreur lors de la mise à jour : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+        }
+    }
+}

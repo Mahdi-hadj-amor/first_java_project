@@ -1,0 +1,434 @@
+package com.gestionfacture;
+
+import javax.swing.*;
+import java.awt.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import javax.swing.table.DefaultTableModel;
+import java.util.Date;
+
+public class FacturePanel extends JPanel {
+    private JTextField txtNumeroFacture;
+    private JSpinner dtpDateFacture;
+    private JComboBox<String> cmbClient;
+    private JTextField txtClientCode;
+    private JTextField txtClientAddress;
+    private JTextField txtClientPhone;
+    private JTextField txtTaxNumber;
+    private JComboBox<String> cmbArticle;
+    private JTextField txtStockQuantity;
+    private JSpinner nudQuantite;
+    private JTextField txtRemise;
+    private JSpinner nudTVA;
+    private JTable dgvFactureDetails;
+    private JLabel lblTotalHTValue;
+    private JLabel lblTVAValue;
+    private JLabel lblTimbreValue;
+    private JLabel lblTotalTTCValue;
+    private JButton btnAjouterArticle;
+    private JButton btnEnregistrer;
+    private JButton btnImprimer;
+
+    public FacturePanel() {
+        initializeComponents();
+        loadClients();
+        loadArticles();
+    }
+
+    private void initializeComponents() {
+        setBounds(0, 0, 1482, 688);
+        setBackground(Color.WHITE);
+        setLayout(null);
+
+        // Numero Facture
+        JLabel lblNumeroFacture = new JLabel("Numéro Facture");
+        lblNumeroFacture.setBounds(273, 23, 114, 20);
+        add(lblNumeroFacture);
+
+        txtNumeroFacture = new JTextField();
+        txtNumeroFacture.setBounds(403, 20, 123, 27);
+        txtNumeroFacture.setEditable(false);
+        add(txtNumeroFacture);
+
+        // Date Facture
+        JLabel lblDateFacture = new JLabel("Date Facture");
+        lblDateFacture.setBounds(556, 23, 92, 20);
+        add(lblDateFacture);
+
+        dtpDateFacture = new JSpinner(new SpinnerDateModel());
+        dtpDateFacture.setBounds(686, 20, 200, 27);
+        dtpDateFacture.setEditor(new JSpinner.DateEditor(dtpDateFacture, "dd/MM/yyyy"));
+        add(dtpDateFacture);
+
+        // Client Group
+        JPanel groupBox1 = new JPanel();
+        groupBox1.setBounds(549, 96, 659, 259);
+        groupBox1.setBorder(BorderFactory.createTitledBorder("Client"));
+        groupBox1.setLayout(null);
+        add(groupBox1);
+
+        JLabel label2 = new JLabel("Client Name:");
+        label2.setBounds(45, 57, 98, 20);
+        groupBox1.add(label2);
+
+        cmbClient = new JComboBox<>();
+        cmbClient.setBounds(175, 54, 200, 28);
+        cmbClient.addActionListener(e -> loadClientDetails());
+        groupBox1.add(cmbClient);
+
+        JLabel label6 = new JLabel("Code Client:");
+        label6.setBounds(404, 58, 93, 20);
+        groupBox1.add(label6);
+
+        txtClientCode = new JTextField();
+        txtClientCode.setBounds(514, 55, 100, 27);
+        txtClientCode.setEditable(false);
+        groupBox1.add(txtClientCode);
+
+        JLabel lblClientAddress = new JLabel("Adresse:");
+        lblClientAddress.setBounds(45, 101, 68, 20);
+        groupBox1.add(lblClientAddress);
+
+        txtClientAddress = new JTextField();
+        txtClientAddress.setBounds(175, 98, 200, 27);
+        txtClientAddress.setEditable(false);
+        groupBox1.add(txtClientAddress);
+
+        JLabel label1 = new JLabel("Telephone:");
+        label1.setBounds(45, 138, 85, 20);
+        groupBox1.add(label1);
+
+        txtClientPhone = new JTextField();
+        txtClientPhone.setBounds(175, 135, 200, 27);
+        txtClientPhone.setEditable(false);
+        groupBox1.add(txtClientPhone);
+
+        JLabel label8 = new JLabel("Tax number:");
+        label8.setBounds(45, 178, 92, 20);
+        groupBox1.add(label8);
+
+        txtTaxNumber = new JTextField();
+        txtTaxNumber.setBounds(175, 178, 200, 27);
+        txtTaxNumber.setEditable(false);
+        groupBox1.add(txtTaxNumber);
+
+        // Article Group
+        JPanel groupBox2 = new JPanel();
+        groupBox2.setBounds(25, 96, 473, 125);
+        groupBox2.setBorder(BorderFactory.createTitledBorder("Article"));
+        groupBox2.setLayout(null);
+        add(groupBox2);
+
+        JLabel label3 = new JLabel("Article Name:");
+        label3.setBounds(54, 29, 103, 20);
+        groupBox2.add(label3);
+
+        cmbArticle = new JComboBox<>();
+        cmbArticle.setBounds(179, 26, 200, 28);
+        cmbArticle.addActionListener(e -> loadArticleDetails());
+        groupBox2.add(cmbArticle);
+
+        JLabel label7 = new JLabel("Stock quantite:");
+        label7.setBounds(49, 75, 111, 20);
+        groupBox2.add(label7);
+
+        txtStockQuantity = new JTextField();
+        txtStockQuantity.setBounds(179, 72, 60, 27);
+        txtStockQuantity.setEditable(false);
+        groupBox2.add(txtStockQuantity);
+
+        // Quantite
+        JLabel label5 = new JLabel("Quantite");
+        label5.setBounds(20, 252, 66, 20);
+        add(label5);
+
+        nudQuantite = new JSpinner(new SpinnerNumberModel(1, 1, Integer.MAX_VALUE, 1));
+        nudQuantite.setBounds(145, 250, 83, 27);
+        add(nudQuantite);
+
+        // Remise
+        JLabel label4 = new JLabel("Remise (%):");
+        label4.setBounds(20, 294, 90, 20);
+        add(label4);
+
+        txtRemise = new JTextField("0");
+        txtRemise.setBounds(145, 294, 100, 27);
+        add(txtRemise);
+
+        // TVA Rate
+        JLabel lblTVAInput = new JLabel("TVA Rate (%):");
+        lblTVAInput.setBounds(24, 344, 98, 20);
+        add(lblTVAInput);
+
+        nudTVA = new JSpinner(new SpinnerNumberModel(20.0, 0.0, 100.0, 0.01));
+        nudTVA.setBounds(145, 342, 100, 27);
+        add(nudTVA);
+
+        // Add Article Button
+        btnAjouterArticle = new JButton("Ajouter Article");
+        btnAjouterArticle.setBounds(353, 295, 110, 34);
+        btnAjouterArticle.addActionListener(e -> btnAjouterArticle_Click());
+        add(btnAjouterArticle);
+
+        // Facture Details Table
+        String[] columnNames = {"CodeArticle", "Article", "Prix", "Quantité", "Remise", "Total"};
+        DefaultTableModel model = new DefaultTableModel(columnNames, 0);
+        dgvFactureDetails = new JTable(model);
+        dgvFactureDetails.setEnabled(false);
+        JScrollPane scrollPane = new JScrollPane(dgvFactureDetails);
+        scrollPane.setBounds(12, 386, 806, 233);
+        add(scrollPane);
+
+        // Totals
+        JLabel lblTotalHT = new JLabel("Total HT:");
+        lblTotalHT.setBounds(868, 388, 68, 20);
+        add(lblTotalHT);
+
+        lblTotalHTValue = new JLabel("0.00");
+        lblTotalHTValue.setBounds(998, 388, 100, 20);
+        add(lblTotalHTValue);
+
+        JLabel lblTVA = new JLabel("TVA (%):");
+        lblTVA.setBounds(868, 418, 64, 20);
+        add(lblTVA);
+
+        lblTVAValue = new JLabel("0.00");
+        lblTVAValue.setBounds(998, 418, 100, 20);
+        add(lblTVAValue);
+
+        JLabel lblTimbre = new JLabel("Droit Timbre:");
+        lblTimbre.setBounds(868, 448, 97, 20);
+        add(lblTimbre);
+
+        lblTimbreValue = new JLabel("0.00");
+        lblTimbreValue.setBounds(998, 448, 100, 20);
+        add(lblTimbreValue);
+
+        JLabel lblTotalTTC = new JLabel("Total TTC:");
+        lblTotalTTC.setBounds(868, 478, 78, 20);
+        lblTotalTTC.setFont(new Font("Segoe UI", Font.BOLD, 9));
+        add(lblTotalTTC);
+
+        lblTotalTTCValue = new JLabel("0.00");
+        lblTotalTTCValue.setBounds(998, 478, 100, 20);
+        lblTotalTTCValue.setFont(new Font("Segoe UI", Font.BOLD, 9));
+        add(lblTotalTTCValue);
+
+        // Save Button
+        btnEnregistrer = new JButton("Enregistrer");
+        btnEnregistrer.setBounds(998, 577, 131, 42);
+        btnEnregistrer.setBackground(Color.BLUE);
+        btnEnregistrer.addActionListener(e -> btnEnregistrer_Click());
+        add(btnEnregistrer);
+
+        // Print Button
+        btnImprimer = new JButton("Imprimer");
+        btnImprimer.setBounds(1135, 577, 131, 42);
+        btnImprimer.setBackground(Color.GREEN);
+        btnImprimer.addActionListener(e -> btnImprimer_Click());
+        add(btnImprimer);
+    }
+
+    private void loadClients() {
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement("SELECT Code_Client, Nom_Prenom FROM Client");
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                cmbClient.addItem(rs.getString("Nom_Prenom"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadClientDetails() {
+        String selectedClient = (String) cmbClient.getSelectedItem();
+        if (selectedClient == null) return;
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM Client WHERE Nom_Prenom = ?")) {
+            pstmt.setString(1, selectedClient);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    txtClientCode.setText(String.valueOf(rs.getInt("Code_Client")));
+                    txtClientAddress.setText(rs.getString("Adresse"));
+                    txtClientPhone.setText(rs.getString("Num_Telephone"));
+                    txtTaxNumber.setText(rs.getString("Matricule_Fiscale"));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadArticles() {
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement("SELECT Code_Article, Nom_Article FROM Article");
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                cmbArticle.addItem(rs.getString("Nom_Article"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadArticleDetails() {
+        String selectedArticle = (String) cmbArticle.getSelectedItem();
+        if (selectedArticle == null) return;
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement("SELECT Qte_Stock FROM Article WHERE Nom_Article = ?")) {
+            pstmt.setString(1, selectedArticle);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    txtStockQuantity.setText(String.valueOf(rs.getInt("Qte_Stock")));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void btnAjouterArticle_Click() {
+        String selectedArticle = (String) cmbArticle.getSelectedItem();
+        int quantity = (int) nudQuantite.getValue();
+        double remise = Double.parseDouble(txtRemise.getText().trim());
+        double tvaRate = (double) nudTVA.getValue();
+
+        if (selectedArticle == null) {
+            JOptionPane.showMessageDialog(this, "Please select an article!", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement("SELECT Code_Article, Nom_Article, PUHTVA, Qte_Stock FROM Article WHERE Nom_Article = ?")) {
+            pstmt.setString(1, selectedArticle);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    int codeArticle = rs.getInt("Code_Article");
+                    double puhtva = rs.getDouble("PUHTVA");
+                    int stockQty = rs.getInt("Qte_Stock");
+
+                    if (quantity > stockQty) {
+                        JOptionPane.showMessageDialog(this, "Not enough stock available!", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    double totalHT = puhtva * quantity * (1 - remise / 100);
+                    DefaultTableModel model = (DefaultTableModel) dgvFactureDetails.getModel();
+                    model.addRow(new Object[]{codeArticle, selectedArticle, puhtva, quantity, remise, totalHT});
+
+                    updateTotals();
+                }
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error adding article: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void updateTotals() {
+        DefaultTableModel model = (DefaultTableModel) dgvFactureDetails.getModel();
+        double totalHT = 0.0;
+        double tvaRate = (double) nudTVA.getValue();
+        double timbre = 0.0; // Adjust as per your logic
+
+        for (int i = 0; i < model.getRowCount(); i++) {
+            totalHT += (double) model.getValueAt(i, 5);
+        }
+
+        double tvaAmount = totalHT * (tvaRate / 100);
+        double totalTTC = totalHT + tvaAmount + timbre;
+
+        lblTotalHTValue.setText(String.format("%.2f", totalHT));
+        lblTVAValue.setText(String.format("%.2f", tvaAmount));
+        lblTimbreValue.setText(String.format("%.2f", timbre));
+        lblTotalTTCValue.setText(String.format("%.2f", totalTTC));
+    }
+
+    private void btnEnregistrer_Click() {
+        String clientName = (String) cmbClient.getSelectedItem();
+        Date dateFacture = (Date) dtpDateFacture.getValue();
+        double totalHT = Double.parseDouble(lblTotalHTValue.getText());
+        double tvaAmount = Double.parseDouble(lblTVAValue.getText());
+        double timbre = Double.parseDouble(lblTimbreValue.getText());
+
+        if (clientName == null || dgvFactureDetails.getRowCount() == 0) {
+            JOptionPane.showMessageDialog(this, "Please select a client and add at least one article!", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            // Insert Facture
+            PreparedStatement pstmtFacture = conn.prepareStatement("INSERT INTO Facture (Date_Facture, Code_Client, Total_HTVA, Montant_TVA_Facture, Montant_HTVA_Facture, Droit_Timbre) VALUES (?, ?, ?, ?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
+            pstmtFacture.setDate(1, new java.sql.Date(dateFacture.getTime()));
+            pstmtFacture.setInt(2, Integer.parseInt(txtClientCode.getText()));
+            pstmtFacture.setDouble(3, totalHT);
+            pstmtFacture.setDouble(4, tvaAmount);
+            pstmtFacture.setDouble(5, totalHT);
+            pstmtFacture.setDouble(6, timbre);
+            pstmtFacture.executeUpdate();
+
+            ResultSet rs = pstmtFacture.getGeneratedKeys();
+            int numFacture = 0;
+            if (rs.next()) {
+                numFacture = rs.getInt(1);
+            }
+
+            // Insert Ligne_Facture
+            DefaultTableModel model = (DefaultTableModel) dgvFactureDetails.getModel();
+            for (int i = 0; i < model.getRowCount(); i++) {
+                int codeArticle = (int) model.getValueAt(i, 0);
+                int quantity = (int) model.getValueAt(i, 3);
+                double remise = (double) model.getValueAt(i, 4);
+                double total = (double) model.getValueAt(i, 5);
+
+                PreparedStatement pstmtLigne = conn.prepareStatement("INSERT INTO Ligne_Facture (Num_Facture, Code_Article, Qte_Vendu, Remise, Totale_HTVA) VALUES (?, ?, ?, ?, ?)");
+                pstmtLigne.setInt(1, numFacture);
+                pstmtLigne.setInt(2, codeArticle);
+                pstmtLigne.setInt(3, quantity);
+                pstmtLigne.setDouble(4, remise);
+                pstmtLigne.setDouble(5, total);
+                pstmtLigne.executeUpdate();
+
+                // Update stock quantity
+                PreparedStatement pstmtStock = conn.prepareStatement("UPDATE Article SET Qte_Stock = Qte_Stock - ? WHERE Code_Article = ?");
+                pstmtStock.setInt(1, quantity);
+                pstmtStock.setInt(2, codeArticle);
+                pstmtStock.executeUpdate();
+            }
+
+            JOptionPane.showMessageDialog(this, "Invoice saved successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            clearForm();
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error saving invoice: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void btnImprimer_Click() {
+        JOptionPane.showMessageDialog(this, "Printing functionality not implemented yet!", "Info", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void clearForm() {
+        txtNumeroFacture.setText("");
+        dtpDateFacture.setValue(new Date());
+        cmbClient.setSelectedIndex(-1);
+        txtClientCode.setText("");
+        txtClientAddress.setText("");
+        txtClientPhone.setText("");
+        txtTaxNumber.setText("");
+        cmbArticle.setSelectedIndex(-1);
+        txtStockQuantity.setText("");
+        nudQuantite.setValue(1);
+        txtRemise.setText("0");
+        nudTVA.setValue(20.0);
+        DefaultTableModel model = (DefaultTableModel) dgvFactureDetails.getModel();
+        model.setRowCount(0);
+        lblTotalHTValue.setText("0.00");
+        lblTVAValue.setText("0.00");
+        lblTimbreValue.setText("0.00");
+        lblTotalTTCValue.setText("0.00");
+    }
+}

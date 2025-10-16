@@ -1,0 +1,197 @@
+package com.gestionfacture;
+
+import javax.swing.*;
+import java.awt.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import javax.swing.table.DefaultTableModel;
+
+public class UserPanel extends JPanel {
+    private JTable dgvUsers;
+    private JTextField txtUsername;
+    private JTextField txtPassword;
+    private JComboBox<String> cmbUserType;
+    private JButton btnAddUser;
+    private JButton btnDeleteUser;
+    private JLabel lblUsername;
+    private JLabel lblPassword;
+    private JLabel lblUserType;
+    private JLabel lblNote;
+
+    public UserPanel() {
+        initializeComponents();
+        loadUsers();
+    }
+
+    private void initializeComponents() {
+        setBounds(0, 0, 1356, 688);
+        setBackground(Color.WHITE);
+        setLayout(null);
+
+        // Users Table
+        String[] columnNames = {"Login", "Password", "Type Utilisateur"};
+        DefaultTableModel model = new DefaultTableModel(columnNames, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return true; // Allow editing directly in the table
+            }
+        };
+        dgvUsers = new JTable(model);
+        dgvUsers.setFillsViewportHeight(true);
+        dgvUsers.setRowHeight(25);
+        JScrollPane scrollPane = new JScrollPane(dgvUsers);
+        scrollPane.setBounds(12, 15, 1199, 297);
+        add(scrollPane);
+
+        // Username Label
+        lblUsername = new JLabel("Username");
+        lblUsername.setBounds(14, 420, 75, 20);
+        add(lblUsername);
+
+        // Username Text Field
+        txtUsername = new JTextField();
+        txtUsername.setBounds(102, 420, 200, 27);
+        add(txtUsername);
+
+        // Password Label
+        lblPassword = new JLabel("Password");
+        lblPassword.setBounds(14, 470, 70, 20);
+        add(lblPassword);
+
+        // Password Text Field
+        txtPassword = new JTextField();
+        txtPassword.setBounds(102, 470, 200, 27);
+        add(txtPassword);
+
+        // User Type Label
+        lblUserType = new JLabel("User Type");
+        lblUserType.setBounds(14, 520, 73, 20);
+        add(lblUserType);
+
+        // User Type Combo Box
+        cmbUserType = new JComboBox<>(new String[]{"Admin", "User"});
+        cmbUserType.setBounds(102, 520, 200, 28);
+        add(cmbUserType);
+
+        // Add Button
+        btnAddUser = new JButton("Add");
+        btnAddUser.setBounds(430, 420, 100, 38);
+        btnAddUser.setBackground(Color.GREEN);
+        btnAddUser.addActionListener(e -> btnAddUser_Click());
+        add(btnAddUser);
+
+        // Delete Button
+        btnDeleteUser = new JButton("Delete");
+        btnDeleteUser.setBounds(430, 470, 100, 38);
+        btnDeleteUser.setBackground(Color.RED);
+        btnDeleteUser.addActionListener(e -> btnDeleteUser_Click());
+        add(btnDeleteUser);
+
+        // Note Label
+        lblNote = new JLabel("* Click on a cell in the table to edit user information.");
+        lblNote.setBounds(594, 479, 354, 20);
+        lblNote.setForeground(Color.RED);
+        add(lblNote);
+
+        // Table cell editor listener to save changes to the database
+        dgvUsers.getModel().addTableModelListener(e -> {
+            int row = e.getFirstRow();
+            int column = e.getColumn();
+            if (row >= 0 && column >= 0) {
+                String login = dgvUsers.getValueAt(row, 0).toString();
+                String password = dgvUsers.getValueAt(row, 1).toString();
+                String userType = dgvUsers.getValueAt(row, 2).toString();
+                updateUserInDatabase(login, password, userType);
+            }
+        });
+    }
+
+    private void loadUsers() {
+        DefaultTableModel model = (DefaultTableModel) dgvUsers.getModel();
+        model.setRowCount(0);
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM Utilisateur");
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                model.addRow(new Object[]{
+                    rs.getString("Login"),
+                    rs.getString("Password"),
+                    rs.getString("Type_Utilisateur")
+                });
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error loading users: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void btnAddUser_Click() {
+        String username = txtUsername.getText().trim();
+        String password = txtPassword.getText().trim();
+        String userType = cmbUserType.getSelectedItem().toString();
+
+        if (username.isEmpty() || password.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please fill all fields!", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement("INSERT INTO Utilisateur (Login, Password, Type_Utilisateur) VALUES (?, ?, ?)")) {
+            pstmt.setString(1, username);
+            pstmt.setString(2, password);
+            pstmt.setString(3, userType);
+            pstmt.executeUpdate();
+            loadUsers();
+            clearFields();
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error adding user: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void btnDeleteUser_Click() {
+        int selectedRow = dgvUsers.getSelectedRow();
+        if (selectedRow < 0) {
+            JOptionPane.showMessageDialog(this, "Please select a user to delete!", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        String username = dgvUsers.getValueAt(selectedRow, 0).toString();
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement("DELETE FROM Utilisateur WHERE Login = ?")) {
+            pstmt.setString(1, username);
+            int rows = pstmt.executeUpdate();
+            if (rows > 0) {
+                loadUsers();
+                clearFields();
+            } else {
+                JOptionPane.showMessageDialog(this, "User not found!", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error deleting user: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void updateUserInDatabase(String login, String password, String userType) {
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement("UPDATE Utilisateur SET Password = ?, Type_Utilisateur = ? WHERE Login = ?")) {
+            pstmt.setString(1, password);
+            pstmt.setString(2, userType);
+            pstmt.setString(3, login);
+            int rows = pstmt.executeUpdate();
+            if (rows == 0) {
+                JOptionPane.showMessageDialog(this, "User not found!", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error updating user: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void clearFields() {
+        txtUsername.setText("");
+        txtPassword.setText("");
+        cmbUserType.setSelectedIndex(0);
+    }
+}

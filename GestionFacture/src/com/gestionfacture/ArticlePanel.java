@@ -1,0 +1,317 @@
+package com.gestionfacture;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+
+import java.awt.*;
+import java.sql.*;
+
+// Cette classe est le panneau pour gérer les articles
+public class ArticlePanel extends JPanel {
+
+    private JTable tableauArticles; // Tableau pour afficher les articles
+    private JTextField txtNomArticle; // Champ texte pour entrer le nom de l'article
+    private JSpinner numQuantiteStock; // Champ pour entrer la quantité en stock
+    private JTextField txtPUHTVA; // Champ texte pour entrer le prix unitaire HTVA
+    private JSpinner numTVA; // Champ pour entrer le taux de TVA
+    private JButton btnAjouterArticle; // Bouton pour ajouter un article
+    private JButton btnModifierArticle; // Bouton pour modifier un article
+    private JButton btnSupprimerArticle; // Bouton pour supprimer un article
+    private JLabel lblNomArticle; // Label pour le nom de l'article
+    private JLabel lblQuantiteStock; // Label pour la quantité en stock
+    private JLabel lblPUHTVA; // Label pour le prix unitaire HTVA
+    private JLabel lblTVA; // Label pour le taux de TVA
+    private JLabel lblNote; // Label pour afficher une note
+
+    // Constructeur de la classe ArticlePanel
+    public ArticlePanel() {
+        initialiserComposants(); // Appelle la méthode pour initialiser les composants
+        chargerArticles(); // Charge les articles depuis la base de données
+    }
+
+    // Méthode pour initialiser les composants du panneau
+    private void initialiserComposants() {
+        setBackground(Color.WHITE); // Met le fond du panneau en blanc
+        setLayout(new BorderLayout(10, 10)); // Utilise BorderLayout pour organiser les éléments
+
+        // Création du tableau des articles
+        String[] columnNames = {"Code Article", "Nom Article", "Qte Stock", "PUHTVA", "TVA"}; // Noms des colonnes du tableau
+        DefaultTableModel model = new DefaultTableModel(columnNames, 0); // Crée un modèle pour le tableau
+        tableauArticles = new JTable(model); // Crée un tableau avec le modèle
+        tableauArticles.setDefaultEditor(Object.class, null); // Désactive l'édition des cellules du tableau
+        JScrollPane scrollPane = new JScrollPane(tableauArticles); // Crée un panneau avec défilement pour le tableau
+        add(scrollPane, BorderLayout.CENTER); // Ajoute le tableau au centre
+
+        // Création du panneau pour les champs et les boutons
+        JPanel panelChamps = new JPanel(); // Crée un panneau pour les champs et les boutons
+        panelChamps.setBackground(Color.WHITE); // Met le fond du panneau en blanc
+        panelChamps.setLayout(new GridLayout(5, 1, 5, 5)); // Utilise GridLayout pour organiser les éléments
+        add(panelChamps, BorderLayout.SOUTH); // Ajoute le panneau en bas
+
+        // Création du panneau pour le nom de l'article
+        JPanel panelNomArticle = new JPanel(new FlowLayout(FlowLayout.LEFT)); // Crée un panneau pour le nom
+        panelNomArticle.setBackground(Color.WHITE); // Met le fond en blanc
+        lblNomArticle = new JLabel("Nom Article"); // Crée un label pour le nom de l'article
+        panelNomArticle.add(lblNomArticle); // Ajoute le label au panneau
+        txtNomArticle = new JTextField(15); // Crée un champ texte pour le nom de l'article
+        panelNomArticle.add(txtNomArticle); // Ajoute le champ texte au panneau
+        panelChamps.add(panelNomArticle); // Ajoute le panneau au panneau des champs
+
+        // Création du panneau pour la quantité en stock
+        JPanel panelQuantiteStock = new JPanel(new FlowLayout(FlowLayout.LEFT)); // Crée un panneau pour la quantité
+        panelQuantiteStock.setBackground(Color.WHITE); // Met le fond en blanc
+        lblQuantiteStock = new JLabel("Quantité Stock"); // Crée un label pour la quantité en stock
+        panelQuantiteStock.add(lblQuantiteStock); // Ajoute le label au panneau
+        numQuantiteStock = new JSpinner(new SpinnerNumberModel(0, 0, Integer.MAX_VALUE, 1)); // Crée un champ pour la quantité
+        numQuantiteStock.setPreferredSize(new Dimension(60, 25)); // Définit une taille pour le champ
+        panelQuantiteStock.add(numQuantiteStock); // Ajoute le champ au panneau
+        panelChamps.add(panelQuantiteStock); // Ajoute le panneau au panneau des champs
+
+        // Création du panneau pour le prix unitaire HTVA
+        JPanel panelPUHTVA = new JPanel(new FlowLayout(FlowLayout.LEFT)); // Crée un panneau pour le prix
+        panelPUHTVA.setBackground(Color.WHITE); // Met le fond en blanc
+        lblPUHTVA = new JLabel("PU HTVA"); // Crée un label pour le prix unitaire HTVA
+        panelPUHTVA.add(lblPUHTVA); // Ajoute le label au panneau
+        txtPUHTVA = new JTextField("0.00", 10); // Crée un champ texte pour le prix unitaire HTVA
+        panelPUHTVA.add(txtPUHTVA); // Ajoute le champ texte au panneau
+        panelChamps.add(panelPUHTVA); // Ajoute le panneau au panneau des champs
+
+        // Création du panneau pour le taux de TVA
+        JPanel panelTVA = new JPanel(new FlowLayout(FlowLayout.LEFT)); // Crée un panneau pour le taux de TVA
+        panelTVA.setBackground(Color.WHITE); // Met le fond en blanc
+        lblTVA = new JLabel("TVA (%)"); // Crée un label pour le taux de TVA
+        panelTVA.add(lblTVA); // Ajoute le label au panneau
+        numTVA = new JSpinner(new SpinnerNumberModel(20.0, 0.0, 100.0, 0.01)); // Crée un champ pour le taux de TVA
+        numTVA.setPreferredSize(new Dimension(60, 25)); // Définit une taille pour le champ
+        panelTVA.add(numTVA); // Ajoute le champ au panneau
+        panelChamps.add(panelTVA); // Ajoute le panneau au panneau des champs
+
+        // Création du panneau pour les boutons et la note
+        JPanel panelBoutons = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5)); // Crée un panneau pour les boutons
+        panelBoutons.setBackground(Color.WHITE); // Met le fond en blanc
+        btnAjouterArticle = new JButton("Ajouter"); // Crée un bouton pour ajouter un article
+        btnAjouterArticle.setBackground(Color.GREEN); // Met la couleur de fond du bouton en vert
+        btnAjouterArticle.addActionListener(e -> btnAjouterArticle_Click()); // Ajoute une action quand on clique sur le bouton
+        panelBoutons.add(btnAjouterArticle); // Ajoute le bouton au panneau
+
+        btnModifierArticle = new JButton("Modifier"); // Crée un bouton pour modifier un article
+        btnModifierArticle.setBackground(Color.BLUE); // Met la couleur de fond du bouton en bleu
+        btnModifierArticle.addActionListener(e -> btnModifierArticle_Click()); // Ajoute une action quand on clique sur le bouton
+        panelBoutons.add(btnModifierArticle); // Ajoute le bouton au panneau
+
+        btnSupprimerArticle = new JButton("Supprimer"); // Crée un bouton pour supprimer un article
+        btnSupprimerArticle.setBackground(Color.RED); // Met la couleur de fond du bouton en rouge
+        btnSupprimerArticle.addActionListener(e -> btnSupprimerArticle_Click()); // Ajoute une action quand on clique sur le bouton
+        panelBoutons.add(btnSupprimerArticle); // Ajoute le bouton au panneau
+
+        lblNote = new JLabel("* Double-cliquez sur une ligne pour modifier l'article."); // Crée un label pour la note
+        lblNote.setForeground(Color.RED); // Met la couleur du texte en rouge
+        panelBoutons.add(lblNote); // Ajoute le label au panneau
+        panelChamps.add(panelBoutons); // Ajoute le panneau au panneau des champs
+
+        // Ajoute un écouteur pour double-clic sur une ligne du tableau
+        tableauArticles.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) { // Méthode appelée quand on clique sur le tableau
+                if (evt.getClickCount() == 2) { // Vérifie si c'est un double-clic
+                    int row = tableauArticles.getSelectedRow(); // Récupère la ligne sélectionnée
+                    if (row >= 0) { // Vérifie si une ligne est sélectionnée
+                        // Récupère les valeurs de la ligne sélectionnée
+                        String nomArticle = tableauArticles.getValueAt(row, 1) != null ? tableauArticles.getValueAt(row, 1).toString() : "";
+                        String quantiteStock = tableauArticles.getValueAt(row, 2) != null ? tableauArticles.getValueAt(row, 2).toString() : "0";
+                        String puhtva = tableauArticles.getValueAt(row, 3) != null ? tableauArticles.getValueAt(row, 3).toString() : "0.00";
+                        String tva = tableauArticles.getValueAt(row, 4) != null ? tableauArticles.getValueAt(row, 4).toString() : "20.0";
+                        // Remplit les champs avec les données
+                        txtNomArticle.setText(nomArticle);
+                        numQuantiteStock.setValue(Integer.parseInt(quantiteStock));
+                        txtPUHTVA.setText(puhtva);
+                        numTVA.setValue(Double.parseDouble(tva));
+                    }
+                }
+            }
+        });
+    }
+
+    // Méthode pour charger les articles depuis la base de données
+    public void chargerArticles() {
+        DefaultTableModel model = (DefaultTableModel) tableauArticles.getModel(); // Récupère le modèle du tableau
+        model.setRowCount(0); // Vide le tableau
+        viderChamps(); // Vide les champs après la refreach
+        
+
+        try {
+            Connection conn = DatabaseConnection.getConnection(); // Ouvre une connexion à la base de données
+            Statement stmt = conn.createStatement(); // Crée un objet pour exécuter des requêtes SQL
+            ResultSet rs = stmt.executeQuery("SELECT * FROM Article"); // Exécute une requête pour récupérer tous les articles
+            while (rs.next()) { // Parcourt tous les articles
+                model.addRow(new Object[]{ // Ajoute une ligne au tableau
+                    rs.getInt("Code_Article"), // Récupère le code de l'article
+                    rs.getString("Nom_Article"), // Récupère le nom de l'article
+                    rs.getInt("Qte_Stock"), // Récupère la quantité en stock
+                    rs.getBigDecimal("PUHTVA"), // Récupère le prix unitaire HTVA
+                    rs.getBigDecimal("TVA") // Récupère le taux de TVA
+                });
+            }
+            rs.close(); // Ferme le résultat
+            stmt.close(); // Ferme l'objet de requête
+            conn.close(); // Ferme la connexion
+        } catch (SQLException e) { // Capture les erreurs de la base de données
+            e.printStackTrace(); // Affiche les erreurs dans la console
+        }
+    }
+
+    // Méthode appelée quand on clique sur le bouton "Ajouter"
+    private void btnAjouterArticle_Click() {
+        String nomArticle = txtNomArticle.getText().trim(); // Récupère le nom de l'article entré
+        int quantiteStock = (int) numQuantiteStock.getValue(); // Récupère la quantité en stock entrée
+        String puhtvaText = txtPUHTVA.getText().trim(); // Récupère le prix unitaire HTVA entré
+        double tva = (double) numTVA.getValue(); // Récupère le taux de TVA entré
+
+        // Vérifie si le nom de l'article est vide
+        if (nomArticle.isEmpty()) { // Vérifie si le champ est vide
+            JOptionPane.showMessageDialog(this, "Veuillez remplir le nom de l'article !", "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+            return; // Arrête la méthode
+        }
+
+        // Vérifie si la quantité est supérieure à 0
+        if (quantiteStock <= 0) { // Vérifie si la quantité est 0 ou négative
+            JOptionPane.showMessageDialog(this, "La quantité en stock doit être supérieure à 0 !", "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+            return; // Arrête la méthode
+        }
+
+        // Vérifie si le prix unitaire HTVA est valide
+        double puhtva;
+        try {
+            puhtva = Double.parseDouble(puhtvaText); // Convertit le texte en nombre
+            if (puhtva <= 0) { // Vérifie si le nombre est 0 ou négatif
+                JOptionPane.showMessageDialog(this, "Le prix unitaire HTVA doit être supérieur à 0 !", "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+                return; // Arrête la méthode
+            }
+        } catch (NumberFormatException e) { // Capture les erreurs de conversion
+            JOptionPane.showMessageDialog(this, "Veuillez entrer un prix unitaire HTVA valide !", "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+            return; // Arrête la méthode
+        }
+
+        // Vérifie si le taux de TVA est supérieur à 0
+        if (tva <= 0) {
+            JOptionPane.showMessageDialog(this, "Le taux de TVA doit être supérieur à 0 !", "Erreur", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        try {
+            Connection conn = DatabaseConnection.getConnection(); // Ouvre une connexion à la base de données
+            Statement stmt = conn.createStatement(); // Crée un objet pour exécuter des requêtes SQL
+            String query = "INSERT INTO Article (Nom_Article, Qte_Stock, PUHTVA, TVA) VALUES ('" + nomArticle + "', " + quantiteStock + ", " + puhtva + ", " + tva + ")"; // Crée la requête SQL pour ajouter un article
+            stmt.executeUpdate(query); // Exécute la requête pour ajouter l'article
+            chargerArticles(); // Recharge la liste des articles
+            viderChamps(); // Vide les champs après l'ajout
+            stmt.close(); // Ferme l'objet de requête
+            conn.close(); // Ferme la connexion
+        } catch (SQLException e) { // Capture les erreurs de la base de données
+            JOptionPane.showMessageDialog(this, "Erreur lors de l'ajout de l'article : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+        }
+    }
+
+    // Méthode appelée quand on clique sur le bouton "Modifier"
+    private void btnModifierArticle_Click() {
+        int selectedRow = tableauArticles.getSelectedRow(); // Récupère la ligne sélectionnée dans le tableau
+        if (selectedRow < 0) { // Vérifie si une ligne est sélectionnée
+            JOptionPane.showMessageDialog(this, "Veuillez sélectionner un article à modifier !", "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+            return; // Arrête la méthode
+        }
+
+        String nomArticle = txtNomArticle.getText().trim(); // Récupère le nom de l'article entré
+        int quantiteStock = (int) numQuantiteStock.getValue(); // Récupère la quantité en stock entrée
+        String puhtvaText = txtPUHTVA.getText().trim(); // Récupère le prix unitaire HTVA entré
+        double tva = (double) numTVA.getValue(); // Récupère le taux de TVA entré
+        int codeArticle = (int) tableauArticles.getValueAt(selectedRow, 0); // Récupère le code de l'article
+
+        // Vérifie si le nom de l'article est vide
+        if (nomArticle.isEmpty()) { // Vérifie si le champ est vide
+            JOptionPane.showMessageDialog(this, "Veuillez remplir le nom de l'article !", "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+            return; // Arrête la méthode
+        }
+
+        // Vérifie si la quantité est supérieure à 0
+        if (quantiteStock <= 0) { // Vérifie si la quantité est 0 ou négative
+            JOptionPane.showMessageDialog(this, "La quantité en stock doit être supérieure à 0 !", "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+            return; // Arrête la méthode
+        }
+
+        // Vérifie si le prix unitaire HTVA est valide
+        double puhtva;
+        try {
+            puhtva = Double.parseDouble(puhtvaText); // Convertit le texte en nombre
+            if (puhtva <= 0) { // Vérifie si le nombre est 0 ou négatif
+                JOptionPane.showMessageDialog(this, "Le prix unitaire HTVA doit être supérieur à 0 !", "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+                return; // Arrête la méthode
+            }
+        } catch (NumberFormatException e) { // Capture les erreurs de conversion
+            JOptionPane.showMessageDialog(this, "Veuillez entrer un prix unitaire HTVA valide !", "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+            return; // Arrête la méthode
+        }
+
+        // Vérifie si le taux de TVA est supérieur à 0
+        if (tva <= 0) {
+            JOptionPane.showMessageDialog(this, "Le taux de TVA doit être supérieur à 0 !", "Erreur", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        try {
+            Connection conn = DatabaseConnection.getConnection(); // Ouvre une connexion à la base de données
+            Statement stmt = conn.createStatement(); // Crée un objet pour exécuter des requêtes SQL
+            String query = "UPDATE Article SET Nom_Article = '" + nomArticle + "', Qte_Stock = " + quantiteStock + ", PUHTVA = " + puhtva + ", TVA = " + tva + " WHERE Code_Article = " + codeArticle; // Crée la requête SQL pour modifier l'article
+            int rows = stmt.executeUpdate(query); // Exécute la requête et récupère le nombre de lignes affectées
+            if (rows > 0) { // Vérifie si la mise à jour a réussi
+                chargerArticles(); // Recharge la liste des articles
+                viderChamps(); // Vide les champs après la modification
+            } else { // Si aucune ligne n'a été affectée
+                JOptionPane.showMessageDialog(this, "Article introuvable !", "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+            }
+            stmt.close(); // Ferme l'objet de requête
+            conn.close(); // Ferme la connexion
+        } catch (SQLException e) { // Capture les erreurs de la base de données
+            JOptionPane.showMessageDialog(this, "Erreur lors de la modification de l'article : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+        }
+    }
+
+    // Méthode appelée quand on clique sur le bouton "Supprimer"
+    private void btnSupprimerArticle_Click() {
+        int selectedRow = tableauArticles.getSelectedRow(); // Récupère la ligne sélectionnée dans le tableau
+        if (selectedRow < 0) { // Vérifie si une ligne est sélectionnée
+            JOptionPane.showMessageDialog(this, "Veuillez sélectionner un article à supprimer !", "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+            return; // Arrête la méthode
+        }
+
+        int choix = JOptionPane.showConfirmDialog(this, "Êtes-vous sûr de vouloir supprimer cet article ?", "Confirmation", JOptionPane.YES_NO_OPTION); // Affiche une fenêtre de confirmation
+        if (choix != JOptionPane.YES_OPTION) { // Si l'utilisateur choisit "Non"
+            return; // Arrête la méthode
+        }
+
+        int codeArticle = (int) tableauArticles.getValueAt(selectedRow, 0); // Récupère le code de l'article
+
+        try {
+            Connection conn = DatabaseConnection.getConnection(); // Ouvre une connexion à la base de données
+            Statement stmt = conn.createStatement(); // Crée un objet pour exécuter des requêtes SQL
+            String query = "DELETE FROM Article WHERE Code_Article = " + codeArticle; // Crée la requête SQL pour supprimer l'article
+            int rows = stmt.executeUpdate(query); // Exécute la requête et récupère le nombre de lignes affectées
+            if (rows > 0) { // Vérifie si la suppression a réussi
+                chargerArticles(); // Recharge la liste des articles
+                viderChamps(); // Vide les champs après la suppression
+            } else { // Si aucune ligne n'a été affectée
+                JOptionPane.showMessageDialog(this, "Article introuvable !", "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+            }
+            stmt.close(); // Ferme l'objet de requête
+            conn.close(); // Ferme la connexion
+        } catch (SQLException e) { // Capture les erreurs de la base de données
+            JOptionPane.showMessageDialog(this, "Erreur lors de la suppression de l'article : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+        }
+    }
+
+    // Méthode pour vider les champs après une action
+    private void viderChamps() {
+        txtNomArticle.setText(""); // Vide le champ "Nom Article"
+        numQuantiteStock.setValue(0); // Réinitialise la quantité en stock
+        txtPUHTVA.setText("0.00"); // Réinitialise le prix unitaire HTVA
+        numTVA.setValue(20.0); // Réinitialise le taux de TVA
+    }
+}

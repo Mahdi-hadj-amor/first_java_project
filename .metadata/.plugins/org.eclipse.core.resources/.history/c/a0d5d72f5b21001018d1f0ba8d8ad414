@@ -1,0 +1,140 @@
+package com.gestionfacture;
+
+import javax.swing.*;
+import java.awt.*;
+
+// Classe principale pour la fenêtre de connexion
+public class LoginWindow extends JFrame {
+
+    // Déclaration des éléments de l'interface
+    private JTextField txtUsername; // Champ pour le login
+    private JTextField txtPassword; // Champ pour le mot de passe (simplifié)
+    private JButton btnLogin; // Bouton pour se connecter
+    private JButton btnShowPassword; // Bouton pour montrer/masquer le mot de passe
+    private JLabel lblUsername; // Label pour "Login"
+    private JLabel lblPassword; // Label pour "Mot de passe"
+    private JLabel lblErrorMessage; // Label pour les messages d'erreur
+    private JPanel panelUsername; // Panneau pour le champ Login
+    private JPanel panelPassword; // Panneau pour le champ Mot de passe
+    private boolean isPasswordVisible = false; // Variable pour savoir si le mot de passe est visible
+
+    // Constructeur
+    public LoginWindow() {
+        initializeComponents(); // Appelle la méthode pour créer les éléments
+    }
+
+    // Méthode pour créer tous les éléments de la fenêtre
+    private void initializeComponents() {
+        // Configuration de la fenêtre
+        setTitle("Connexion"); // Titre de la fenêtre
+        setSize(724, 496); // Taille de la fenêtre
+        setLocationRelativeTo(null); // Centre la fenêtre sur l'écran
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // Ferme l'application quand on clique sur X
+        setLayout(null); // Positionnement manuel
+        getContentPane().setBackground(Color.WHITE); // Fond blanc
+
+        // Label pour "Login"
+        lblUsername = new JLabel("Login");
+        lblUsername.setBounds(214, 82, 100, 23); // Position et taille
+        lblUsername.setFont(new Font("Arial", Font.PLAIN, 10)); // Police
+        lblUsername.setForeground(Color.GRAY); // Couleur grise
+        add(lblUsername);
+
+        // Panneau pour le champ Login
+        panelUsername = new JPanel();
+        panelUsername.setBounds(214, 107, 300, 40); // Position et taille
+        panelUsername.setBackground(Color.LIGHT_GRAY); // Fond gris clair
+        panelUsername.setBorder(BorderFactory.createLineBorder(Color.BLACK)); // Bordure noire
+        panelUsername.setLayout(null); // Positionnement manuel
+        add(panelUsername);
+
+        // Champ pour le login
+        txtUsername = new JTextField();
+        txtUsername.setBounds(9, 7, 280, 23); // Position et taille
+        txtUsername.setFont(new Font("Arial", Font.PLAIN, 12)); // Police
+        txtUsername.setBorder(null); // Pas de bordure
+        panelUsername.add(txtUsername);
+
+        // Label pour "Mot de passe"
+        lblPassword = new JLabel("Mot de passe");
+        lblPassword.setBounds(210, 171, 115, 23); // Position et taille
+        lblPassword.setFont(new Font("Arial", Font.PLAIN, 10)); // Police
+        lblPassword.setForeground(Color.GRAY); // Couleur grise
+        add(lblPassword);
+
+        // Panneau pour le champ Mot de passe
+        panelPassword = new JPanel();
+        panelPassword.setBounds(210, 197, 307, 40); // Position et taille
+        panelPassword.setBackground(Color.LIGHT_GRAY); // Fond gris clair
+        panelPassword.setBorder(BorderFactory.createLineBorder(Color.BLACK)); // Bordure noire
+        panelPassword.setLayout(null); // Positionnement manuel
+        add(panelPassword);
+
+        // Champ pour le mot de passe (simplifié avec JTextField au lieu de JPasswordField)
+        txtPassword = new JTextField();
+        txtPassword.setBounds(6, 5, 260, 23); // Position et taille
+        txtPassword.setFont(new Font("Arial", Font.PLAIN, 12)); // Police
+        txtPassword.setBorder(null); // Pas de bordure
+        txtPassword.setText("••••••••"); // Texte par défaut pour simuler un mot de passe masqué
+        panelPassword.add(txtPassword);
+
+        // Bouton pour montrer/masquer le mot de passe
+        btnShowPassword = new JButton("");
+        btnShowPassword.setBounds(272, 3, 30, 30); // Position et taille
+        btnShowPassword.setFont(new Font("Arial", Font.PLAIN, 12)); // Police
+        btnShowPassword.setBorder(null); // Pas de bordure
+        btnShowPassword.setBackground(Color.LIGHT_GRAY); // Fond gris clair
+        btnShowPassword.addActionListener(e -> btnShowPassword_Click()); // Action quand on clique
+        panelPassword.add(btnShowPassword);
+
+        // Label pour les messages d'erreur
+        lblErrorMessage = new JLabel("");
+        lblErrorMessage.setBounds(197, 295, 300, 18); // Position et taille
+        lblErrorMessage.setFont(new Font("Arial", Font.BOLD, 9)); // Police
+        lblErrorMessage.setForeground(Color.RED); // Couleur rouge
+        add(lblErrorMessage);
+
+        // Bouton pour se connecter
+        btnLogin = new JButton("Se connecter");
+        btnLogin.setBounds(199, 377, 300, 40); // Position et taille
+        btnLogin.setFont(new Font("Arial", Font.BOLD, 12)); // Police
+        btnLogin.setBackground(Color.BLUE); // Fond bleu
+        btnLogin.setForeground(Color.WHITE); // Texte blanc
+        btnLogin.setBorder(null); // Pas de bordure
+        btnLogin.addActionListener(e -> btnLogin_Click()); // Action quand on clique
+        add(btnLogin);
+
+        setVisible(true); // Affiche la fenêtre
+    }
+
+    // Action pour le bouton "Montrer le mot de passe"
+    private void btnShowPassword_Click() {
+        isPasswordVisible = !isPasswordVisible; // Change l'état (visible ou masqué)
+        if (isPasswordVisible) {
+            txtPassword.setText("password123"); // Exemple simple pour montrer le mot de passe
+        } else {
+            txtPassword.setText("••••••••"); // Exemple simple pour masquer le mot de passe
+        }
+    }
+
+    // Action pour le bouton "Se connecter"
+    private void btnLogin_Click() {
+        // Vérification simple des champs
+        String username = txtUsername.getText();
+        String password = txtPassword.getText();
+
+        if (username.equals("") || password.equals("••••••••")) {
+            lblErrorMessage.setText("Veuillez remplir tous les champs !");
+        } else {
+            lblErrorMessage.setText("");
+            // Ouvre la fenêtre MainWindow si le login est correct
+            new MainWindow();
+            dispose(); // Ferme la fenêtre de connexion
+        }
+    }
+
+    // Méthode principale pour lancer l'application
+    public static void main(String[] args) {
+        new LoginWindow(); // Crée et affiche la fenêtre
+    }
+}

@@ -1,0 +1,275 @@
+package com.gestionfacture;
+
+import javax.swing.*;
+import java.awt.*;
+import java.sql.*;
+
+// Cette classe est le panneau pour gérer les clients
+public class ClientPanel extends JPanel {
+
+    private JTable tableauClients; // Tableau pour afficher les clients
+    private JTextField txtNomPrenom; // Champ texte pour entrer le nom et prénom
+    private JTextField txtMatriculeFiscale; // Champ texte pour entrer le matricule fiscale
+    private JTextField txtAdresse; // Champ texte pour entrer l'adresse
+    private JTextField txtNumTelephone; // Champ texte pour entrer le numéro de téléphone
+    private JButton btnAjouterClient; // Bouton pour ajouter un client
+    private JButton btnModifierClient; // Bouton pour modifier un client
+    private JButton btnSupprimerClient; // Bouton pour supprimer un client
+    private JLabel lblNomPrenom; // Label pour le nom et prénom
+    private JLabel lblMatriculeFiscale; // Label pour le matricule fiscale
+    private JLabel lblAdresse; // Label pour l'adresse
+    private JLabel lblNumTelephone; // Label pour le numéro de téléphone
+    private JLabel lblNote; // Label pour afficher une note
+
+    // Constructeur de la classe ClientPanel
+    public ClientPanel() {
+        initialiserComposants(); // Appelle la méthode pour initialiser les composants
+        chargerClients(); // Charge les clients depuis la base de données
+    }
+
+    // Méthode pour initialiser les composants du panneau
+    private void initialiserComposants() {
+        setBackground(Color.WHITE); // Met le fond du panneau en blanc
+        setLayout(new BorderLayout(10, 10)); // Utilise BorderLayout pour organiser les éléments
+
+        // Création du tableau des clients
+        String[] columnNames = {"Code Client", "Nom Prenom", "Matricule Fiscale", "Adresse", "Num Telephone"}; // Noms des colonnes du tableau
+        DefaultTableModel model = new DefaultTableModel(columnNames, 0); // Crée un modèle pour le tableau
+        tableauClients = new JTable(model); // Crée un tableau avec le modèle
+        JScrollPane scrollPane = new JScrollPane(tableauClients); // Crée un panneau avec défilement pour le tableau
+        add(scrollPane, BorderLayout.CENTER); // Ajoute le tableau au centre
+
+        // Création du panneau pour les champs et les boutons
+        JPanel panelChamps = new JPanel(); // Crée un panneau pour les champs et les boutons
+        panelChamps.setBackground(Color.WHITE); // Met le fond du panneau en blanc
+        panelChamps.setLayout(new GridLayout(5, 1, 5, 5)); // Utilise GridLayout pour organiser les éléments
+        add(panelChamps, BorderLayout.SOUTH); // Ajoute le panneau en bas
+
+        // Création du panneau pour le nom et prénom
+        JPanel panelNomPrenom = new JPanel(new FlowLayout(FlowLayout.LEFT)); // Crée un panneau pour le nom et prénom
+        panelNomPrenom.setBackground(Color.WHITE); // Met le fond en blanc
+        lblNomPrenom = new JLabel("Nom Prénom"); // Crée un label pour le nom et prénom
+        panelNomPrenom.add(lblNomPrenom); // Ajoute le label au panneau
+        txtNomPrenom = new JTextField(15); // Crée un champ texte pour le nom et prénom
+        panelNomPrenom.add(txtNomPrenom); // Ajoute le champ texte au panneau
+        panelChamps.add(panelNomPrenom); // Ajoute le panneau au panneau des champs
+
+        // Création du panneau pour le matricule fiscale
+        JPanel panelMatriculeFiscale = new JPanel(new FlowLayout(FlowLayout.LEFT)); // Crée un panneau pour le matricule fiscale
+        panelMatriculeFiscale.setBackground(Color.WHITE); // Met le fond en blanc
+        lblMatriculeFiscale = new JLabel("Matricule Fiscale"); // Crée un label pour le matricule fiscale
+        panelMatriculeFiscale.add(lblMatriculeFiscale); // Ajoute le label au panneau
+        txtMatriculeFiscale = new JTextField(10); // Crée un champ texte pour le matricule fiscale
+        panelMatriculeFiscale.add(txtMatriculeFiscale); // Ajoute le champ texte au panneau
+        panelChamps.add(panelMatriculeFiscale); // Ajoute le panneau au panneau des champs
+
+        // Création du panneau pour l'adresse
+        JPanel panelAdresse = new JPanel(new FlowLayout(FlowLayout.LEFT)); // Crée un panneau pour l'adresse
+        panelAdresse.setBackground(Color.WHITE); // Met le fond en blanc
+        lblAdresse = new JLabel("Adresse"); // Crée un label pour l'adresse
+        panelAdresse.add(lblAdresse); // Ajoute le label au panneau
+        txtAdresse = new JTextField(15); // Crée un champ texte pour l'adresse
+        panelAdresse.add(txtAdresse); // Ajoute le champ texte au panneau
+        panelChamps.add(panelAdresse); // Ajoute le panneau au panneau des champs
+
+        // Création du panneau pour le numéro de téléphone
+        JPanel panelNumTelephone = new JPanel(new FlowLayout(FlowLayout.LEFT)); // Crée un panneau pour le numéro de téléphone
+        panelNumTelephone.setBackground(Color.WHITE); // Met le fond en blanc
+        lblNumTelephone = new JLabel("Numéro Téléphone"); // Crée un label pour le numéro de téléphone
+        panelNumTelephone.add(lblNumTelephone); // Ajoute le label au panneau
+        txtNumTelephone = new JTextField(10); // Crée un champ texte pour le numéro de téléphone
+        panelNumTelephone.add(txtNumTelephone); // Ajoute le champ texte au panneau
+        panelChamps.add(panelNumTelephone); // Ajoute le panneau au panneau des champs
+
+        // Création du panneau pour les boutons et la note
+        JPanel panelBoutons = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5)); // Crée un panneau pour les boutons
+        panelBoutons.setBackground(Color.WHITE); // Met le fond en blanc
+        btnAjouterClient = new JButton("Ajouter"); // Crée un bouton pour ajouter un client
+        btnAjouterClient.setBackground(Color.GREEN); // Met la couleur de fond du bouton en vert
+        btnAjouterClient.addActionListener(e -> btnAjouterClient_Click()); // Ajoute une action quand on clique sur le bouton
+        panelBoutons.add(btnAjouterClient); // Ajoute le bouton au panneau
+
+        btnModifierClient = new JButton("Modifier"); // Crée un bouton pour modifier un client
+        btnModifierClient.setBackground(Color.BLUE); // Met la couleur de fond du bouton en bleu
+        btnModifierClient.addActionListener(e -> btnModifierClient_Click()); // Ajoute une action quand on clique sur le bouton
+        panelBoutons.add(btnModifierClient); // Ajoute le bouton au panneau
+
+        btnSupprimerClient = new JButton("Supprimer"); // Crée un bouton pour supprimer un client
+        btnSupprimerClient.setBackground(Color.RED); // Met la couleur de fond du bouton en rouge
+        btnSupprimerClient.addActionListener(e -> btnSupprimerClient_Click()); // Ajoute une action quand on clique sur le bouton
+        panelBoutons.add(btnSupprimerClient); // Ajoute le bouton au panneau
+
+        lblNote = new JLabel("* Double-cliquez sur une ligne pour modifier le client."); // Crée un label pour la note
+        lblNote.setForeground(Color.RED); // Met la couleur du texte en rouge
+        panelBoutons.add(lblNote); // Ajoute le label au panneau
+        panelChamps.add(panelBoutons); // Ajoute le panneau au panneau des champs
+
+        // Ajoute un écouteur pour double-clic sur une ligne du tableau
+        tableauClients.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) { // Méthode appelée quand on clique sur le tableau
+                if (evt.getClickCount() == 2) { // Vérifie si c'est un double-clic
+                    int row = tableauClients.getSelectedRow(); // Récupère la ligne sélectionnée
+                    if (row >= 0) { // Vérifie si une ligne est sélectionnée
+                        txtNomPrenom.setText(tableauClients.getValueAt(row, 1).toString()); // Remplit le champ "Nom Prénom"
+                        txtMatriculeFiscale.setText(tableauClients.getValueAt(row, 2).toString()); // Remplit le champ "Matricule Fiscale"
+                        txtAdresse.setText(tableauClients.getValueAt(row, 3).toString()); // Remplit le champ "Adresse"
+                        txtNumTelephone.setText(tableauClients.getValueAt(row, 4).toString()); // Remplit le champ "Numéro Téléphone"
+                    }
+                }
+            }
+        });
+    }
+
+    // Méthode pour charger les clients depuis la base de données
+    private void chargerClients() {
+        DefaultTableModel model = (DefaultTableModel) tableauClients.getModel(); // Récupère le modèle du tableau
+        model.setRowCount(0); // Vide le tableau
+
+        try {
+            Connection conn = DatabaseConnection.getConnection(); // Ouvre une connexion à la base de données
+            Statement stmt = conn.createStatement(); // Crée un objet pour exécuter des requêtes SQL
+            ResultSet rs = stmt.executeQuery("SELECT * FROM Client"); // Exécute une requête pour récupérer tous les clients
+            while (rs.next()) { // Parcourt tous les clients
+                model.addRow(new Object[]{ // Ajoute une ligne au tableau
+                    rs.getInt("Code_Client"), // Récupère le code du client
+                    rs.getString("Nom_Prenom"), // Récupère le nom et prénom
+                    rs.getString("Matricule_Fiscale"), // Récupère le matricule fiscale
+                    rs.getString("Adresse"), // Récupère l'adresse
+                    rs.getString("Num_Telephone") // Récupère le numéro de téléphone
+                });
+            }
+            rs.close(); // Ferme le résultat
+            stmt.close(); // Ferme l'objet de requête
+            conn.close(); // Ferme la connexion
+        } catch (SQLException e) { // Capture les erreurs de la base de données
+            e.printStackTrace(); // Affiche les erreurs dans la console
+        }
+    }
+
+    // Méthode appelée quand on clique sur le bouton "Ajouter"
+    private void btnAjouterClient_Click() {
+        String nomPrenom = txtNomPrenom.getText().trim(); // Récupère le nom et prénom entré
+        String matriculeFiscale = txtMatriculeFiscale.getText().trim(); // Récupère le matricule fiscale entré
+        String adresse = txtAdresse.getText().trim(); // Récupère l'adresse entrée
+        String numTelephoneText = txtNumTelephone.getText().trim(); // Récupère le numéro de téléphone entré
+
+        // Vérifie si le nom et prénom est vide
+        if (nomPrenom.isEmpty()) { // Vérifie si le champ est vide
+            JOptionPane.showMessageDialog(this, "Veuillez remplir le nom et prénom !", "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+            return; // Arrête la méthode
+        }
+
+        // Vérifie si le numéro de téléphone est valide
+        long numTelephone;
+        try {
+            numTelephone = Long.parseLong(numTelephoneText); // Convertit le texte en nombre
+            if (numTelephone < 0) { // Vérifie si le nombre est négatif
+                JOptionPane.showMessageDialog(this, "Le numéro de téléphone doit être un nombre positif !", "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+                return; // Arrête la méthode
+            }
+        } catch (NumberFormatException e) { // Capture les erreurs de conversion
+            JOptionPane.showMessageDialog(this, "Veuillez entrer un numéro de téléphone valide !", "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+            return; // Arrête la méthode
+        }
+
+        try {
+            Connection conn = DatabaseConnection.getConnection(); // Ouvre une connexion à la base de données
+            Statement stmt = conn.createStatement(); // Crée un objet pour exécuter des requêtes SQL
+            String query = "INSERT INTO Client (Nom_Prenom, Matricule_Fiscale, Adresse, Num_Telephone) VALUES ('" + nomPrenom + "', '" + matriculeFiscale + "', '" + adresse + "', '" + numTelephoneText + "')"; // Crée la requête SQL pour ajouter un client
+            stmt.executeUpdate(query); // Exécute la requête pour ajouter le client
+            chargerClients(); // Recharge la liste des clients
+            viderChamps(); // Vide les champs après l'ajout
+            stmt.close(); // Ferme l'objet de requête
+            conn.close(); // Ferme la connexion
+        } catch (SQLException e) { // Capture les erreurs de la base de données
+            JOptionPane.showMessageDialog(this, "Erreur lors de l'ajout du client : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+        }
+    }
+
+    // Méthode appelée quand on clique sur le bouton "Modifier"
+    private void btnModifierClient_Click() {
+        int selectedRow = tableauClients.getSelectedRow(); // Récupère la ligne sélectionnée dans le tableau
+        if (selectedRow < 0) { // Vérifie si une ligne est sélectionnée
+            JOptionPane.showMessageDialog(this, "Veuillez sélectionner un client à modifier !", "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+            return; // Arrête la méthode
+        }
+
+        String nomPrenom = txtNomPrenom.getText().trim(); // Récupère le nom et prénom entré
+        String matriculeFiscale = txtMatriculeFiscale.getText().trim(); // Récupère le matricule fiscale entré
+        String adresse = txtAdresse.getText().trim(); // Récupère l'adresse entrée
+        String numTelephoneText = txtNumTelephone.getText().trim(); // Récupère le numéro de téléphone entré
+        int codeClient = (int) tableauClients.getValueAt(selectedRow, 0); // Récupère le code du client
+
+        // Vérifie si le nom et prénom est vide
+        if (nomPrenom.isEmpty()) { // Vérifie si le champ est vide
+            JOptionPane.showMessageDialog(this, "Veuillez remplir le nom et prénom !", "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+            return; // Arrête la méthode
+        }
+
+        // Vérifie si le numéro de téléphone est valide
+        long numTelephone;
+        try {
+            numTelephone = Long.parseLong(numTelephoneText); // Convertit le texte en nombre
+            if (numTelephone < 0) { // Vérifie si le nombre est négatif
+                JOptionPane.showMessageDialog(this, "Le numéro de téléphone doit être un nombre positif !", "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+                return; // Arrête la méthode
+            }
+        } catch (NumberFormatException e) { // Capture les erreurs de conversion
+            JOptionPane.showMessageDialog(this, "Veuillez entrer un numéro de téléphone valide !", "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+            return; // Arrête la méthode
+        }
+
+        try {
+            Connection conn = DatabaseConnection.getConnection(); // Ouvre une connexion à la base de données
+            Statement stmt = conn.createStatement(); // Crée un objet pour exécuter des requêtes SQL
+            String query = "UPDATE Client SET Nom_Prenom = '" + nomPrenom + "', Matricule_Fiscale = '" + matriculeFiscale + "', Adresse = '" + adresse + "', Num_Telephone = '" + numTelephoneText + "' WHERE Code_Client = " + codeClient; // Crée la requête SQL pour modifier le client
+            int rows = stmt.executeUpdate(query); // Exécute la requête et récupère le nombre de lignes affectées
+            if (rows > 0) { // Vérifie si la mise à jour a réussi
+                chargerClients(); // Recharge la liste des clients
+                viderChamps(); // Vide les champs après la modification
+            } else { // Si aucune ligne n'a été affectée
+                JOptionPane.showMessageDialog(this, "Client introuvable !", "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+            }
+            stmt.close(); // Ferme l'objet de requête
+            conn.close(); // Ferme la connexion
+        } catch (SQLException e) { // Capture les erreurs de la base de données
+            JOptionPane.showMessageDialog(this, "Erreur lors de la modification du client : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+        }
+    }
+
+    // Méthode appelée quand on clique sur le bouton "Supprimer"
+    private void btnSupprimerClient_Click() {
+        int selectedRow = tableauClients.getSelectedRow(); // Récupère la ligne sélectionnée dans le tableau
+        if (selectedRow < 0) { // Vérifie si une ligne est sélectionnée
+            JOptionPane.showMessageDialog(this, "Veuillez sélectionner un client à supprimer !", "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+            return; // Arrête la méthode
+        }
+
+        int codeClient = (int) tableauClients.getValueAt(selectedRow, 0); // Récupère le code du client
+
+        try {
+            Connection conn = DatabaseConnection.getConnection(); // Ouvre une connexion à la base de données
+            Statement stmt = conn.createStatement(); // Crée un objet pour exécuter des requêtes SQL
+            String query = "DELETE FROM Client WHERE Code_Client = " + codeClient; // Crée la requête SQL pour supprimer le client
+            int rows = stmt.executeUpdate(query); // Exécute la requête et récupère le nombre de lignes affectées
+            if (rows > 0) { // Vérifie si la suppression a réussi
+                chargerClients(); // Recharge la liste des clients
+                viderChamps(); // Vide les champs après la suppression
+            } else { // Si aucune ligne n'a été affectée
+                JOptionPane.showMessageDialog(this, "Client introuvable !", "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+            }
+            stmt.close(); // Ferme l'objet de requête
+            conn.close(); // Ferme la connexion
+        } catch (SQLException e) { // Capture les erreurs de la base de données
+            JOptionPane.showMessageDialog(this, "Erreur lors de la suppression du client : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE); // Affiche un message d'erreur
+        }
+    }
+
+    // Méthode pour vider les champs après une action
+    private void viderChamps() {
+        txtNomPrenom.setText(""); // Vide le champ "Nom Prénom"
+        txtMatriculeFiscale.setText(""); // Vide le champ "Matricule Fiscale"
+        txtAdresse.setText(""); // Vide le champ "Adresse"
+        txtNumTelephone.setText(""); // Vide le champ "Numéro Téléphone"
+    }
+}

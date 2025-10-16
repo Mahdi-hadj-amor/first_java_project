@@ -1,0 +1,252 @@
+package com.gestionfacture;
+
+import javax.swing.*;
+import java.awt.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import javax.swing.table.DefaultTableModel;
+
+public class ArticlePanel extends JPanel {
+    private JTable dgvArticles;
+    private JTextField txtArticleName;
+    private JSpinner numStockQty;
+    private JTextField txtPUHTVA;
+    private JSpinner numTVA;
+    private JButton btnAddArticle;
+    private JButton btnEditArticle;
+    private JButton btnDeleteArticle;
+    private JLabel lblArticleName;
+    private JLabel lblStockQty;
+    private JLabel lblPUHTVA;
+    private JLabel lblTVA;
+    private JTextField txtSearchName;
+    private JLabel lblSearch;
+    private JLabel lblNote;
+
+    public ArticlePanel() {
+        initializeComponents();
+        loadArticles();
+    }
+
+    private void initializeComponents() {
+        setBounds(0, 0, 1482, 688);
+        setBackground(Color.WHITE);
+        setLayout(null);
+
+        // Articles Table
+        String[] columnNames = {"Code Article", "Nom Article", "Qte Stock", "PUHTVA", "TVA"};
+        DefaultTableModel model = new DefaultTableModel(columnNames, 0);
+        dgvArticles = new JTable(model);
+        JScrollPane scrollPane = new JScrollPane(dgvArticles);
+        scrollPane.setBounds(12, 15, 1205, 279);
+        add(scrollPane);
+
+        // Article Name Label
+        lblArticleName = new JLabel("Article Name");
+        lblArticleName.setBounds(31, 389, 96, 20);
+        add(lblArticleName);
+
+        // Article Name Text Field
+        txtArticleName = new JTextField();
+        txtArticleName.setBounds(144, 389, 200, 27);
+        add(txtArticleName);
+
+        // Stock Quantity Label
+        lblStockQty = new JLabel("Stock Quantity");
+        lblStockQty.setBounds(31, 439, 105, 20);
+        add(lblStockQty);
+
+        // Stock Quantity Spinner
+        numStockQty = new JSpinner(new SpinnerNumberModel(0, 0, Integer.MAX_VALUE, 1));
+        numStockQty.setBounds(144, 439, 63, 27);
+        add(numStockQty);
+
+        // PUHTVA Label
+        lblPUHTVA = new JLabel("PU HTVA");
+        lblPUHTVA.setBounds(31, 489, 68, 20);
+        add(lblPUHTVA);
+
+        // PUHTVA Text Field
+        txtPUHTVA = new JTextField("0.00");
+        txtPUHTVA.setBounds(144, 489, 125, 27);
+        add(txtPUHTVA);
+
+        // TVA Label
+        lblTVA = new JLabel("TVA(%):");
+        lblTVA.setBounds(31, 539, 64, 20);
+        add(lblTVA);
+
+        // TVA Spinner
+        numTVA = new JSpinner(new SpinnerNumberModel(20.0, 0.0, 100.0, 0.01));
+        numTVA.setBounds(144, 539, 74, 27);
+        add(numTVA);
+
+        // Add Button
+        btnAddArticle = new JButton("Add");
+        btnAddArticle.setBounds(479, 410, 100, 38);
+        btnAddArticle.setBackground(Color.GREEN);
+        btnAddArticle.addActionListener(e -> btnAddArticle_Click());
+        add(btnAddArticle);
+
+        // Edit Button
+        btnEditArticle = new JButton("Edit");
+        btnEditArticle.setBounds(479, 460, 100, 38);
+        btnEditArticle.setBackground(Color.BLUE);
+        btnEditArticle.addActionListener(e -> btnEditArticle_Click());
+        add(btnEditArticle);
+
+        // Delete Button
+        btnDeleteArticle = new JButton("Delete");
+        btnDeleteArticle.setBounds(479, 510, 100, 38);
+        btnDeleteArticle.setBackground(Color.RED);
+        btnDeleteArticle.addActionListener(e -> btnDeleteArticle_Click());
+        add(btnDeleteArticle);
+
+        // Search Label
+        lblSearch = new JLabel("Search By Name:");
+        lblSearch.setBounds(909, 308, 124, 20);
+        add(lblSearch);
+
+        // Search Text Field
+        txtSearchName = new JTextField();
+        txtSearchName.setBounds(1039, 305, 179, 27);
+        add(txtSearchName);
+
+        // Note Label
+        lblNote = new JLabel("* Double-click on a row to edit the product information.");
+        lblNote.setBounds(624, 469, 379, 20);
+        lblNote.setForeground(Color.RED);
+        add(lblNote);
+
+        // Double-click to edit
+        dgvArticles.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                if (evt.getClickCount() == 2) {
+                    int row = dgvArticles.getSelectedRow();
+                    if (row >= 0) {
+                        txtArticleName.setText(dgvArticles.getValueAt(row, 1).toString());
+                        numStockQty.setValue(Integer.parseInt(dgvArticles.getValueAt(row, 2).toString()));
+                        txtPUHTVA.setText(dgvArticles.getValueAt(row, 3).toString());
+                        numTVA.setValue(Double.parseDouble(dgvArticles.getValueAt(row, 4).toString()));
+                    }
+                }
+            }
+        });
+    }
+
+    private void loadArticles() {
+        DefaultTableModel model = (DefaultTableModel) dgvArticles.getModel();
+        model.setRowCount(0);
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM Article");
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                model.addRow(new Object[]{
+                    rs.getInt("Code_Article"),
+                    rs.getString("Nom_Article"),
+                    rs.getInt("Qte_Stock"),
+                    rs.getBigDecimal("PUHTVA"),
+                    rs.getBigDecimal("TVA")
+                });
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void btnAddArticle_Click() {
+        String articleName = txtArticleName.getText().trim();
+        int stockQty = (int) numStockQty.getValue();
+        double puhtva = Double.parseDouble(txtPUHTVA.getText().trim());
+        double tva = (double) numTVA.getValue();
+
+        if (articleName.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please fill the article name!", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement("INSERT INTO Article (Nom_Article, Qte_Stock, PUHTVA, TVA) VALUES (?, ?, ?, ?)")) {
+            pstmt.setString(1, articleName);
+            pstmt.setInt(2, stockQty);
+            pstmt.setDouble(3, puhtva);
+            pstmt.setDouble(4, tva);
+            pstmt.executeUpdate();
+            loadArticles();
+            clearFields();
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error adding article: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void btnEditArticle_Click() {
+        int selectedRow = dgvArticles.getSelectedRow();
+        if (selectedRow < 0) {
+            JOptionPane.showMessageDialog(this, "Please select an article to edit!", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        String articleName = txtArticleName.getText().trim();
+        int stockQty = (int) numStockQty.getValue();
+        double puhtva = Double.parseDouble(txtPUHTVA.getText().trim());
+        double tva = (double) numTVA.getValue();
+        int codeArticle = (int) dgvArticles.getValueAt(selectedRow, 0);
+
+        if (articleName.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please fill the article name!", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement("UPDATE Article SET Nom_Article = ?, Qte_Stock = ?, PUHTVA = ?, TVA = ? WHERE Code_Article = ?")) {
+            pstmt.setString(1, articleName);
+            pstmt.setInt(2, stockQty);
+            pstmt.setDouble(3, puhtva);
+            pstmt.setDouble(4, tva);
+            pstmt.setInt(5, codeArticle);
+            int rows = pstmt.executeUpdate();
+            if (rows > 0) {
+                loadArticles();
+                clearFields();
+            } else {
+                JOptionPane.showMessageDialog(this, "Article not found!", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error editing article: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void btnDeleteArticle_Click() {
+        int selectedRow = dgvArticles.getSelectedRow();
+        if (selectedRow < 0) {
+            JOptionPane.showMessageDialog(this, "Please select an article to delete!", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        int codeArticle = (int) dgvArticles.getValueAt(selectedRow, 0);
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement("DELETE FROM Article WHERE Code_Article = ?")) {
+            pstmt.setInt(1, codeArticle);
+            int rows = pstmt.executeUpdate();
+            if (rows > 0) {
+                loadArticles();
+                clearFields();
+            } else {
+                JOptionPane.showMessageDialog(this, "Article not found!", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error deleting article: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void clearFields() {
+        txtArticleName.setText("");
+        numStockQty.setValue(0);
+        txtPUHTVA.setText("0.00");
+        numTVA.setValue(20.0);
+    }
+}

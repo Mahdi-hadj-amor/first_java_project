@@ -1,0 +1,310 @@
+package com.gestionfacture;
+
+import javax.swing.*;
+import java.awt.*;
+import java.sql.*;
+
+// Cette classe est la fenêtre principale de l'application
+public class MainWindow extends JFrame {
+
+    // Déclaration des panneaux (Panels)
+    private JPanel sidePanel; // Panneau latéral pour les boutons de navigation
+    private JPanel mainPanel; // Panneau principal pour afficher les sections
+    private JPanel loginPanel; // Panneau pour la page de connexion
+    private JPanel homePanel; // Panneau pour la page d'accueil
+    private JPanel aboutPanel; // Panneau pour la page "À propos"
+
+    // Déclaration des boutons de navigation
+    private JButton btnHome; // Bouton pour la page d'accueil
+    private JButton btnClients; // Bouton pour gérer les clients
+    private JButton btnArticles; // Bouton pour gérer les articles
+    private JButton btnAbout; // Bouton pour la page "À propos"
+    private JButton btnLogout; // Bouton pour se déconnecter
+
+    // Déclaration des composants de la page de connexion
+    private JTextField txtUsername; // Champ pour entrer le nom d'utilisateur
+    private JPasswordField txtPassword; // Champ pour entrer le mot de passe
+    private JButton btnLogin; // Bouton pour se connecter
+    private JButton btnShowPassword; // Bouton pour afficher/masquer le mot de passe
+    private JLabel lblErrorMessage; // Label pour afficher les messages d'erreur
+
+    // Déclaration des autres panneaux (sections)
+    private ClientPanel clientPanel; // Panneau pour gérer les clients
+    private ArticlePanel articlePanel; // Panneau pour gérer les articles
+
+    private String currentUserType; // Variable pour stocker le type d'utilisateur (Admin ou User)
+
+    // Constructeur de la classe MainWindow
+    public MainWindow() {
+        initializeComponents(); // Appelle la méthode pour initialiser les composants
+    }
+
+    // Méthode pour initialiser tous les composants de la fenêtre
+    private void initializeComponents() {
+        setTitle("Menu Principal"); // Définit le titre de la fenêtre
+        setBounds(100, 20, 800, 600); // Définit la position et la taille de la fenêtre (utilisé une seule fois)
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // Ferme l'application quand on clique sur la croix
+        getContentPane().setBackground(Color.WHITE); // Met le fond de la fenêtre en blanc
+        setLayout(new BorderLayout()); // Utilise BorderLayout pour organiser les panneaux
+
+        // Création du panneau latéral (Sidebar)
+        createSidePanel(); // Appelle la méthode pour créer le panneau latéral
+        add(sidePanel, BorderLayout.WEST); // Ajoute le panneau latéral à gauche
+
+        // Création du panneau principal
+        mainPanel = new JPanel(); // Crée un nouveau panneau principal
+        mainPanel.setBackground(Color.WHITE); // Met le fond du panneau principal en blanc
+        mainPanel.setLayout(new BorderLayout()); // Utilise BorderLayout pour organiser le contenu
+        add(mainPanel, BorderLayout.CENTER); // Ajoute le panneau principal au centre
+
+        // Création des autres panneaux
+        createHomePanel(); // Crée le panneau de la page d'accueil
+        clientPanel = new ClientPanel(); // Crée le panneau de gestion des clients
+        articlePanel = new ArticlePanel(); // Crée le panneau de gestion des articles
+        createAboutPanel(); // Crée le panneau de la page "À propos"
+
+        // Création et affichage de la page de connexion
+        showLoginPanel(); // Affiche la page de connexion au démarrage
+        setVisible(true); // Rend la fenêtre visible
+    }
+
+    // Méthode pour créer le panneau latéral (Sidebar)
+    private void createSidePanel() {
+        sidePanel = new JPanel(); // Crée un nouveau panneau latéral
+        sidePanel.setPreferredSize(new Dimension(150, 600)); // Définit la largeur du panneau latéral
+        sidePanel.setBackground(Color.WHITE); // Met le fond du panneau en blanc
+        sidePanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2)); // Ajoute une bordure noire
+        sidePanel.setLayout(new GridLayout(5, 1, 10, 10)); // Utilise GridLayout pour organiser les boutons (5 boutons)
+
+        // Création du bouton "Home"
+        btnHome = new JButton("Home"); // Crée le bouton "Home"
+        btnHome.setBackground(Color.WHITE); // Met le fond du bouton en blanc
+        btnHome.setEnabled(false); // Désactive le bouton au démarrage
+        btnHome.addActionListener(e -> btnHome_Click()); // Ajoute un écouteur pour le clic sur le bouton
+        sidePanel.add(btnHome); // Ajoute le bouton au panneau latéral
+
+        // Création du bouton "Gestion Client"
+        btnClients = new JButton("Gestion Client"); // Crée le bouton "Gestion Client"
+        btnClients.setBackground(Color.WHITE); // Met le fond du bouton en blanc
+        btnClients.setEnabled(false); // Désactive le bouton au démarrage
+        btnClients.addActionListener(e -> btnClients_Click()); // Ajoute un écouteur pour le clic sur le bouton
+        sidePanel.add(btnClients); // Ajoute le bouton au panneau latéral
+
+        // Création du bouton "Gestion Article"
+        btnArticles = new JButton("Gestion Article"); // Crée le bouton "Gestion Article"
+        btnArticles.setBackground(Color.WHITE); // Met le fond du bouton en blanc
+        btnArticles.setEnabled(false); // Désactive le bouton au démarrage
+        btnArticles.addActionListener(e -> btnArticles_Click()); // Ajoute un écouteur pour le clic sur le bouton
+        sidePanel.add(btnArticles); // Ajoute le bouton au panneau latéral
+
+        // Création du bouton "À propos"
+        btnAbout = new JButton("À propos"); // Crée le bouton "À propos"
+        btnAbout.setBackground(Color.WHITE); // Met le fond du bouton en blanc
+        btnAbout.setEnabled(false); // Désactive le bouton au démarrage
+        btnAbout.addActionListener(e -> btnAbout_Click()); // Ajoute un écouteur pour le clic sur le bouton
+        sidePanel.add(btnAbout); // Ajoute le bouton au panneau latéral
+
+        // Création du bouton "Déconnexion"
+        btnLogout = new JButton("Déconnexion"); // Crée le bouton "Déconnexion"
+        btnLogout.setBackground(Color.WHITE); // Met le fond du bouton en blanc
+        btnLogout.setEnabled(false); // Désactive le bouton au démarrage
+        btnLogout.addActionListener(e -> btnLogout_Click()); // Ajoute un écouteur pour le clic sur le bouton
+        sidePanel.add(btnLogout); // Ajoute le bouton au panneau latéral
+    }
+
+    // Méthode pour créer le panneau de la page d'accueil
+    private void createHomePanel() {
+        homePanel = new JPanel(); // Crée un nouveau panneau pour la page d'accueil
+        homePanel.setBackground(Color.WHITE); // Met le fond du panneau en blanc
+        homePanel.setLayout(new GridLayout(3, 1)); // Utilise GridLayout pour organiser les labels
+
+        // Création du label de titre
+        JLabel labelTitle = new JLabel("Gestion Facture"); // Crée un label pour le titre
+        labelTitle.setFont(new Font("Arial", Font.BOLD, 18)); // Définit la police et la taille du texte
+        labelTitle.setForeground(Color.BLUE); // Met la couleur du texte en bleu
+        labelTitle.setHorizontalAlignment(SwingConstants.CENTER); // Centre le texte
+        homePanel.add(labelTitle); // Ajoute le label au panneau
+
+        // Création du label de sous-titre
+        JLabel labelSubtitle = new JLabel("Gestion de Facturation - Simplifiez Vos Transactions !"); // Crée un label pour le sous-titre
+        labelSubtitle.setFont(new Font("Arial", Font.PLAIN, 14)); // Définit la police et la taille du texte
+        labelSubtitle.setHorizontalAlignment(SwingConstants.CENTER); // Centre le texte
+        homePanel.add(labelSubtitle); // Ajoute le label au panneau
+
+        // Création du label de description
+        JLabel labelDescription = new JLabel("Bienvenue dans votre système de gestion de facturation."); // Crée un label pour la description
+        labelDescription.setFont(new Font("Arial", Font.PLAIN, 12)); // Définit la police et la taille du texte
+        labelDescription.setHorizontalAlignment(SwingConstants.CENTER); // Centre le texte
+        homePanel.add(labelDescription); // Ajoute le label au panneau
+    }
+
+    // Méthode pour créer le panneau de la page "À propos"
+    private void createAboutPanel() {
+        aboutPanel = new JPanel(); // Crée un nouveau panneau pour la page "À propos"
+        aboutPanel.setBackground(Color.WHITE); // Met le fond du panneau en blanc
+        aboutPanel.setLayout(new GridLayout(1, 1)); // Utilise GridLayout pour organiser le contenu
+
+        // Création du label de la page "À propos"
+        JLabel aboutLabel = new JLabel("Application de gestion de factures - Version 1.0"); // Crée un label pour le texte
+        aboutLabel.setFont(new Font("Arial", Font.BOLD, 16)); // Définit la police et la taille du texte
+        aboutLabel.setHorizontalAlignment(SwingConstants.CENTER); // Centre le texte
+        aboutPanel.add(aboutLabel); // Ajoute le label au panneau
+    }
+
+    // Méthode pour créer et afficher la page de connexion
+    private void showLoginPanel() {
+        loginPanel = new JPanel(); // Crée un nouveau panneau pour la page de connexion
+        loginPanel.setBackground(Color.WHITE); // Met le fond du panneau en blanc
+        loginPanel.setLayout(new GridLayout(5, 1, 10, 10)); // Utilise GridLayout pour organiser les éléments
+
+        // Création du champ pour le nom d'utilisateur
+        JPanel usernamePanel = new JPanel(new FlowLayout()); // Crée un panneau pour le champ de nom d'utilisateur
+        JLabel lblUsername = new JLabel("Nom d'utilisateur: "); // Crée un label pour le nom d'utilisateur
+        lblUsername.setForeground(Color.GRAY); // Met la couleur du texte en gris
+        txtUsername = new JTextField(15); // Crée un champ texte pour entrer le nom d'utilisateur
+        usernamePanel.add(lblUsername); // Ajoute le label au panneau
+        usernamePanel.add(txtUsername); // Ajoute le champ texte au panneau
+        loginPanel.add(usernamePanel); // Ajoute le panneau au panneau de connexion
+
+        // Création du champ pour le mot de passe
+        JPanel passwordPanel = new JPanel(new FlowLayout()); // Crée un panneau pour le champ de mot de passe
+        JLabel lblPassword = new JLabel("Mot de passe: "); // Crée un label pour le mot de passe
+        lblPassword.setForeground(Color.GRAY); // Met la couleur du texte en gris
+        txtPassword = new JPasswordField(15); // Crée un champ texte pour entrer le mot de passe
+        btnShowPassword = new JButton("Afficher"); // Crée un bouton pour afficher/masquer le mot de passe
+        btnShowPassword.addActionListener(e -> togglePasswordVisibility()); // Ajoute un écouteur pour le bouton
+        passwordPanel.add(lblPassword); // Ajoute le label au panneau
+        passwordPanel.add(txtPassword); // Ajoute le champ texte au panneau
+        passwordPanel.add(btnShowPassword); // Ajoute le bouton au panneau
+        loginPanel.add(passwordPanel); // Ajoute le panneau au panneau de connexion
+
+        // Création du label pour les messages d'erreur
+        lblErrorMessage = new JLabel(""); // Crée un label pour afficher les messages d'erreur
+        lblErrorMessage.setForeground(Color.RED); // Met la couleur du texte en rouge
+        lblErrorMessage.setHorizontalAlignment(SwingConstants.CENTER); // Centre le texte
+        loginPanel.add(lblErrorMessage); // Ajoute le label au panneau de connexion
+
+        // Création du bouton de connexion
+        btnLogin = new JButton("Se connecter"); // Crée un bouton pour se connecter
+        btnLogin.setBackground(Color.BLUE); // Met le fond du bouton en bleu
+        btnLogin.setForeground(Color.WHITE); // Met la couleur du texte en blanc
+        btnLogin.addActionListener(e -> btnLogin_Click()); // Ajoute un écouteur pour le clic sur le bouton
+        loginPanel.add(btnLogin); // Ajoute le bouton au panneau de connexion
+
+        // Affichage du panneau de connexion
+        mainPanel.removeAll(); // Supprime tout le contenu actuel du panneau principal
+        mainPanel.add(loginPanel, BorderLayout.CENTER); // Ajoute le panneau de connexion au centre
+        mainPanel.revalidate(); // Met à jour l'affichage du panneau principal
+        mainPanel.repaint(); // Redessine le panneau principal
+    }
+
+    // Méthode pour afficher/masquer le mot de passe
+    private void togglePasswordVisibility() {
+        if (txtPassword.getEchoChar() == '•') { // Vérifie si le mot de passe est masqué
+            txtPassword.setEchoChar((char) 0); // Affiche le mot de passe
+            btnShowPassword.setText("Masquer"); // Change le texte du bouton en "Masquer"
+        } else {
+            txtPassword.setEchoChar('•'); // Masque le mot de passe
+            btnShowPassword.setText("Afficher"); // Change le texte du bouton en "Afficher"
+        }
+    }
+
+    // Méthode appelée quand on clique sur le bouton "Se connecter"
+    private void btnLogin_Click() {
+        String username = txtUsername.getText().trim(); // Récupère le nom d'utilisateur entré
+        String password = new String(txtPassword.getPassword()).trim(); // Récupère le mot de passe entré
+
+        if (username.isEmpty() || password.isEmpty()) { // Vérifie si les champs sont vides
+            lblErrorMessage.setText("Veuillez remplir tous les champs !"); // Affiche un message d'erreur
+            return; // Arrête la méthode
+        }
+
+        try {
+            Connection conn = DatabaseConnection.getConnection(); // Ouvre une connexion à la base de données
+            Statement stmt = conn.createStatement(); // Crée un objet pour exécuter des requêtes SQL
+            String query = "SELECT * FROM Utilisateur WHERE Login = '" + username + "' AND Password = '" + password + "'"; // Crée la requête SQL
+            ResultSet rs = stmt.executeQuery(query); // Exécute la requête et récupère les résultats
+            if (rs.next()) { // Vérifie si un utilisateur correspondant existe
+                lblErrorMessage.setText(""); // Efface le message d'erreur
+                currentUserType = rs.getString("Type_Utilisateur"); // Récupère le type d'utilisateur (Admin ou User)
+                enableButtons(); // Active les boutons de navigation
+                btnHome_Click(); // Affiche la page d'accueil
+            } else {
+                lblErrorMessage.setText("Nom d'utilisateur ou mot de passe incorrect !"); // Affiche un message d'erreur
+            }
+            rs.close(); // Ferme le résultat
+            stmt.close(); // Ferme l'objet de requête
+            conn.close(); // Ferme la connexion
+        } catch (SQLException e) { // Capture les erreurs de la base de données
+            lblErrorMessage.setText("Erreur de connexion à la base de données !"); // Affiche un message d'erreur
+            e.printStackTrace(); // Affiche les détails de l'erreur dans la console
+        }
+    }
+
+    // Méthode appelée quand on clique sur le bouton "Home"
+    private void btnHome_Click() {
+        mainPanel.removeAll(); // Supprime tout le contenu actuel du panneau principal
+        mainPanel.add(homePanel, BorderLayout.CENTER); // Ajoute le panneau de la page d'accueil
+        mainPanel.revalidate(); // Met à jour l'affichage du panneau principal
+        mainPanel.repaint(); // Redessine le panneau principal
+    }
+
+    // Méthode appelée quand on clique sur le bouton "Gestion Client"
+    private void btnClients_Click() {
+        mainPanel.removeAll(); // Supprime tout le contenu actuel du panneau principal
+        mainPanel.add(clientPanel, BorderLayout.CENTER); // Ajoute le panneau de gestion des clients
+        mainPanel.revalidate(); // Met à jour l'affichage du panneau principal
+        mainPanel.repaint(); // Redessine le panneau principal
+    }
+
+    // Méthode appelée quand on clique sur le bouton "Gestion Article"
+    private void btnArticles_Click() {
+        mainPanel.removeAll(); // Supprime tout le contenu actuel du panneau principal
+        mainPanel.add(articlePanel, BorderLayout.CENTER); // Ajoute le panneau de gestion des articles
+        mainPanel.revalidate(); // Met à jour l'affichage du panneau principal
+        mainPanel.repaint(); // Redessine le panneau principal
+    }
+
+    // Méthode appelée quand on clique sur le bouton "À propos"
+    private void btnAbout_Click() {
+        mainPanel.removeAll(); // Supprime tout le contenu actuel du panneau principal
+        mainPanel.add(aboutPanel, BorderLayout.CENTER); // Ajoute le panneau de la page "À propos"
+        mainPanel.revalidate(); // Met à jour l'affichage du panneau principal
+        mainPanel.repaint(); // Redessine le panneau principal
+    }
+
+    // Méthode appelée quand on clique sur le bouton "Déconnexion"
+    private void btnLogout_Click() {
+        disableButtons(); // Désactive tous les boutons de navigation
+        showLoginPanel(); // Affiche la page de connexion
+        txtUsername.setText(""); // Vide le champ du nom d'utilisateur
+        txtPassword.setText(""); // Vide le champ du mot de passe
+        lblErrorMessage.setText(""); // Efface le message d'erreur
+        btnShowPassword.setText("Afficher"); // Remet le texte du bouton "Afficher"
+        txtPassword.setEchoChar('•'); // Masque le mot de passe
+        currentUserType = null; // Réinitialise le type d'utilisateur
+    }
+
+    // Méthode pour activer les boutons de navigation
+    private void enableButtons() {
+        btnHome.setEnabled(true); // Active le bouton "Home"
+        btnClients.setEnabled(true); // Active le bouton "Gestion Client"
+        btnArticles.setEnabled(true); // Active le bouton "Gestion Article"
+        btnAbout.setEnabled(true); // Active le bouton "À propos"
+        btnLogout.setEnabled(true); // Active le bouton "Déconnexion"
+    }
+
+    // Méthode pour désactiver les boutons de navigation
+    private void disableButtons() {
+        btnHome.setEnabled(false); // Désactive le bouton "Home"
+        btnClients.setEnabled(false); // Désactive le bouton "Gestion Client"
+        btnArticles.setEnabled(false); // Désactive le bouton "Gestion Article"
+        btnAbout.setEnabled(false); // Désactive le bouton "À propos"
+        btnLogout.setEnabled(false); // Désactive le bouton "Déconnexion"
+    }
+
+    // Méthode principale pour lancer l'application
+    public static void main(String[] args) {
+        new MainWindow(); // Crée une nouvelle fenêtre principale
+    }
+}

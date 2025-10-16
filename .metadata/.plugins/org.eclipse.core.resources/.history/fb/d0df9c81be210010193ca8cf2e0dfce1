@@ -1,0 +1,354 @@
+package com.gestionfacture;
+
+import javax.swing.*;
+import java.awt.*;
+
+// Classe principale pour la fenêtre du menu
+public class MainWindow extends JFrame {
+
+    // Déclaration des éléments de l'interface
+    private JPanel sidePanel; // Panneau à gauche pour les boutons
+    private JPanel mainPanel; // Panneau au centre pour afficher les interfaces
+    private JButton btnHome; // Bouton pour la page d'accueil
+    private JButton btnUsers; // Bouton pour gérer les utilisateurs
+    private JButton btnClients; // Bouton pour gérer les clients
+    private JButton btnArticles; // Bouton pour gérer les articles
+    private JButton btnFactures; // Bouton pour gérer les factures
+    private JButton btnAbout; // Bouton pour la page "À propos"
+    private JButton btnLogout; // Bouton pour se déconnecter
+    private JLabel labelTitle; // Texte pour le titre
+    private JLabel labelSubtitle; // Texte pour le sous-titre
+    private JLabel labelDescription; // Texte pour la description
+
+    // Éléments pour le formulaire de connexion
+    private JTextField txtUsername; // Champ pour le login
+    private JTextField txtPassword; // Champ pour le mot de passe
+    private JButton btnLogin; // Bouton pour se connecter
+    private JLabel lblUsername; // Label pour "Login"
+    private JLabel lblPassword; // Label pour "Mot de passe"
+    private JLabel lblErrorMessage; // Label pour les messages d'erreur
+    private JPanel panelUsername; // Panneau pour le champ Login
+    private JPanel panelPassword; // Panneau pour le champ Mot de passe
+
+    // Panneaux pour les interfaces
+    private JPanel homePanel; // Panneau pour la page d'accueil
+    private UserPanel userPanel; // Panneau pour gérer les utilisateurs
+    private ClientPanel clientPanel; // Panneau pour gérer les clients
+    private ArticlePanel articlePanel; // Panneau pour gérer les articles
+    private FacturePanel facturePanel; // Panneau pour gérer les factures
+    private JPanel aboutPanel; // Panneau pour la page "À propos"
+
+    // Constructeur
+    public MainWindow() {
+        initializeComponents(); // Appelle la méthode pour créer les éléments
+    }
+
+    // Méthode pour créer tous les éléments de la fenêtre
+    private void initializeComponents() {
+        // Configuration de la fenêtre
+        setTitle("Menu Principal"); // Titre de la fenêtre
+        setSize(1540, 720); // Taille de la fenêtre
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // Ferme l'application quand on clique sur X
+        setLayout(null); // Pas de layout automatique, on place les éléments manuellement
+        getContentPane().setBackground(Color.WHITE); // Fond blanc
+
+        // Création du panneau à gauche (sidePanel)
+        sidePanel = new JPanel();
+        sidePanel.setBounds(0, 0, 184, 689); // Position et taille
+        sidePanel.setBackground(Color.WHITE); // Fond blanc
+        sidePanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2)); // Bordure noire
+        sidePanel.setLayout(null); // Positionnement manuel
+        add(sidePanel); // Ajoute à la fenêtre
+
+        // Bouton "Home"
+        btnHome = new JButton("Home");
+        btnHome.setBounds(3, 110, 160, 58); // Position et taille
+        btnHome.setBackground(Color.WHITE); // Fond blanc
+        btnHome.setFont(new Font("Segoe UI", Font.BOLD, 12)); // Police
+        btnHome.setBorder(null); // Pas de bordure
+        btnHome.setEnabled(false); // Désactivé au démarrage
+        btnHome.addActionListener(e -> btnHome_Click()); // Action quand on clique
+        sidePanel.add(btnHome); // Ajoute au panneau
+
+        // Bouton "Gestion Utilisateur"
+        btnUsers = new JButton("Gestion Utilisateur");
+        btnUsers.setBounds(3, 175, 160, 58);
+        btnUsers.setBackground(Color.WHITE);
+        btnUsers.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnUsers.setBorder(null);
+        btnUsers.setEnabled(false); // Désactivé au démarrage
+        btnUsers.addActionListener(e -> btnUsers_Click());
+        sidePanel.add(btnUsers);
+
+        // Bouton "Gestion Client"
+        btnClients = new JButton("Gestion Client");
+        btnClients.setBounds(3, 241, 160, 58);
+        btnClients.setBackground(Color.WHITE);
+        btnClients.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnClients.setBorder(null);
+        btnClients.setEnabled(false); // Désactivé au démarrage
+        btnClients.addActionListener(e -> btnClients_Click());
+        sidePanel.add(btnClients);
+
+        // Bouton "Gestion Article"
+        btnArticles = new JButton("Gestion Article");
+        btnArticles.setBounds(3, 306, 160, 58);
+        btnArticles.setBackground(Color.WHITE);
+        btnArticles.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnArticles.setBorder(null);
+        btnArticles.setEnabled(false); // Désactivé au démarrage
+        btnArticles.addActionListener(e -> btnArticles_Click());
+        sidePanel.add(btnArticles);
+
+        // Bouton "Gestion Facture"
+        btnFactures = new JButton("Gestion Facture");
+        btnFactures.setBounds(3, 372, 160, 58);
+        btnFactures.setBackground(Color.WHITE);
+        btnFactures.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnFactures.setBorder(null);
+        btnFactures.setEnabled(false); // Désactivé au démarrage
+        btnFactures.addActionListener(e -> btnFactures_Click());
+        sidePanel.add(btnFactures);
+
+        // Bouton "À propos"
+        btnAbout = new JButton("À propos");
+        btnAbout.setBounds(3, 541, 160, 58);
+        btnAbout.setBackground(Color.WHITE);
+        btnAbout.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnAbout.setBorder(null);
+        btnAbout.setEnabled(false); // Désactivé au démarrage
+        btnAbout.addActionListener(e -> btnAbout_Click());
+        sidePanel.add(btnAbout);
+
+        // Bouton "Déconnexion"
+        btnLogout = new JButton("Déconnexion");
+        btnLogout.setBounds(3, 607, 160, 58);
+        btnLogout.setBackground(Color.WHITE);
+        btnLogout.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnLogout.setBorder(null);
+        btnLogout.setEnabled(false); // Désactivé au démarrage
+        btnLogout.addActionListener(e -> btnLogout_Click());
+        sidePanel.add(btnLogout);
+
+        // Création du panneau au centre (mainPanel)
+        mainPanel = new JPanel();
+        mainPanel.setBounds(184, 0, 1482, 688); // Position et taille
+        mainPanel.setBackground(Color.WHITE); // Fond blanc
+        mainPanel.setLayout(null); // Positionnement manuel
+        add(mainPanel);
+
+        // Création des panneaux pour chaque section
+        createHomePanel(); // Panneau pour la page d'accueil
+        userPanel = new UserPanel(); // Panneau pour gérer les utilisateurs
+        clientPanel = new ClientPanel(); // Panneau pour gérer les clients
+        articlePanel = new ArticlePanel(); // Panneau pour gérer les articles
+        facturePanel = new FacturePanel(); // Panneau pour gérer les factures
+        createAboutPanel(); // Panneau pour la page "À propos"
+
+        // Afficher le formulaire de connexion au démarrage
+        showLoginForm();
+
+        setVisible(true); // Affiche la fenêtre
+    }
+
+    // Méthode pour créer le panneau de la page d'accueil
+    private void createHomePanel() {
+        homePanel = new JPanel();
+        homePanel.setBounds(0, 0, 1482, 688); // Taille pour remplir mainPanel
+        homePanel.setBackground(Color.WHITE); // Fond blanc
+        homePanel.setLayout(null); // Positionnement manuel
+
+        // Texte pour le titre
+        labelTitle = new JLabel("Gestion Facture");
+        labelTitle.setBounds(440, 30, 217, 36);
+        labelTitle.setFont(new Font("Arial Nova Cond", Font.BOLD, 18));
+        labelTitle.setForeground(Color.BLUE); // Couleur bleue
+        homePanel.add(labelTitle);
+
+        // Texte pour le sous-titre
+        labelSubtitle = new JLabel("Gestion de Facturation - Simplifiez Vos Transactions !");
+        labelSubtitle.setBounds(28, 266, 795, 27);
+        labelSubtitle.setFont(new Font("Castellar", Font.PLAIN, 14));
+        homePanel.add(labelSubtitle);
+
+        // Texte pour la description
+        labelDescription = new JLabel("Bienvenue dans votre système de gestion de facturation.");
+        labelDescription.setBounds(5, 111, 1385, 100);
+        labelDescription.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        homePanel.add(labelDescription);
+    }
+
+    // Méthode pour créer le panneau "À propos"
+    private void createAboutPanel() {
+        aboutPanel = new JPanel();
+        aboutPanel.setBounds(0, 0, 1482, 688); // Taille pour remplir mainPanel
+        aboutPanel.setBackground(Color.WHITE); // Fond blanc
+        aboutPanel.setLayout(null); // Positionnement manuel
+
+        JLabel aboutLabel = new JLabel("Application de gestion de factures - Version 1.0");
+        aboutLabel.setBounds(500, 300, 400, 30);
+        aboutLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        aboutPanel.add(aboutLabel);
+    }
+
+    // Méthode pour afficher le formulaire de connexion
+    private void showLoginForm() {
+        mainPanel.removeAll(); // Supprime tout contenu de mainPanel
+
+        // Label pour "Login"
+        lblUsername = new JLabel("Login");
+        lblUsername.setBounds(500, 150, 100, 23); // Position et taille
+        lblUsername.setFont(new Font("Arial", Font.PLAIN, 10)); // Police
+        lblUsername.setForeground(Color.GRAY); // Couleur grise
+        mainPanel.add(lblUsername);
+
+        // Panneau pour le champ Login
+        panelUsername = new JPanel();
+        panelUsername.setBounds(500, 175, 300, 40); // Position et taille
+        panelUsername.setBackground(Color.LIGHT_GRAY); // Fond gris clair
+        panelUsername.setBorder(BorderFactory.createLineBorder(Color.BLACK)); // Bordure noire
+        panelUsername.setLayout(null); // Positionnement manuel
+        mainPanel.add(panelUsername);
+
+        // Champ pour le login
+        txtUsername = new JTextField();
+        txtUsername.setBounds(9, 7, 280, 23); // Position et taille
+        txtUsername.setFont(new Font("Arial", Font.PLAIN, 12)); // Police
+        txtUsername.setBorder(null); // Pas de bordure
+        panelUsername.add(txtUsername);
+
+        // Label pour "Mot de passe"
+        lblPassword = new JLabel("Mot de passe");
+        lblPassword.setBounds(500, 225, 115, 23); // Position et taille
+        lblPassword.setFont(new Font("Arial", Font.PLAIN, 10)); // Police
+        lblPassword.setForeground(Color.GRAY); // Couleur grise
+        mainPanel.add(lblPassword);
+
+        // Panneau pour le champ Mot de passe
+        panelPassword = new JPanel();
+        panelPassword.setBounds(500, 250, 300, 40); // Position et taille
+        panelPassword.setBackground(Color.LIGHT_GRAY); // Fond gris clair
+        panelPassword.setBorder(BorderFactory.createLineBorder(Color.BLACK)); // Bordure noire
+        panelPassword.setLayout(null); // Positionnement manuel
+        mainPanel.add(panelPassword);
+
+        // Champ pour le mot de passe
+        txtPassword = new JTextField();
+        txtPassword.setBounds(6, 5, 280, 23); // Position et taille
+        txtPassword.setFont(new Font("Arial", Font.PLAIN, 12)); // Police
+        txtPassword.setBorder(null); // Pas de bordure
+        txtPassword.setText("********"); // Texte par défaut pour simuler un mot de passe masqué
+        panelPassword.add(txtPassword);
+
+        // Label pour les messages d'erreur
+        lblErrorMessage = new JLabel("");
+        lblErrorMessage.setBounds(500, 300, 300, 18); // Position et taille
+        lblErrorMessage.setFont(new Font("Arial", Font.BOLD, 9)); // Police
+        lblErrorMessage.setForeground(Color.RED); // Couleur rouge
+        mainPanel.add(lblErrorMessage);
+
+        // Bouton pour se connecter
+        btnLogin = new JButton("Se connecter");
+        btnLogin.setBounds(500, 350, 300, 40); // Position et taille
+        btnLogin.setFont(new Font("Arial", Font.BOLD, 12)); // Police
+        btnLogin.setBackground(Color.BLUE); // Fond bleu
+        btnLogin.setForeground(Color.WHITE); // Texte blanc
+        btnLogin.setBorder(null); // Pas de bordure
+        btnLogin.addActionListener(e -> btnLogin_Click()); // Action quand on clique
+        mainPanel.add(btnLogin);
+
+        mainPanel.revalidate(); // Rafraîchit le panneau
+        mainPanel.repaint(); // Redessine le panneau
+    }
+
+    // Action pour le bouton "Se connecter"
+    private void btnLogin_Click() {
+        // Vérification simple des champs
+        String username = txtUsername.getText();
+        String password = txtPassword.getText();
+
+        // Exemple de vérification (mot de passe correct : "admin123")
+        if (username.equals("admin") && password.equals("admin123")) {
+            lblErrorMessage.setText("");
+            // Activer tous les boutons de la barre latérale
+            btnHome.setEnabled(true);
+            btnUsers.setEnabled(true);
+            btnClients.setEnabled(true);
+            btnArticles.setEnabled(true);
+            btnFactures.setEnabled(true);
+            btnAbout.setEnabled(true);
+            btnLogout.setEnabled(true);
+            // Afficher la page d'accueil après connexion
+            btnHome_Click();
+        } else {
+            lblErrorMessage.setText("Nom d'utilisateur ou mot de passe incorrect !");
+        }
+    }
+
+    // Action pour le bouton "Home"
+    private void btnHome_Click() {
+        mainPanel.removeAll(); // Supprime tout contenu de mainPanel
+        mainPanel.add(homePanel); // Ajoute le panneau de la page d'accueil
+        mainPanel.revalidate(); // Rafraîchit le panneau
+        mainPanel.repaint(); // Redessine le panneau
+    }
+
+    // Action pour le bouton "Gestion Utilisateur"
+    private void btnUsers_Click() {
+        mainPanel.removeAll(); // Supprime tout contenu de mainPanel
+        mainPanel.add(userPanel); // Ajoute le panneau de gestion des utilisateurs
+        mainPanel.revalidate(); // Rafraîchit le panneau
+        mainPanel.repaint(); // Redessine le panneau
+    }
+
+    // Action pour le bouton "Gestion Client"
+    private void btnClients_Click() {
+        mainPanel.removeAll(); // Supprime tout contenu de mainPanel
+        mainPanel.add(clientPanel); // Ajoute le panneau de gestion des clients
+        mainPanel.revalidate(); // Rafraîchit le panneau
+        mainPanel.repaint(); // Redessine le panneau
+    }
+
+    // Action pour le bouton "Gestion Article"
+    private void btnArticles_Click() {
+        mainPanel.removeAll(); // Supprime tout contenu de mainPanel
+        mainPanel.add(articlePanel); // Ajoute le panneau de gestion des articles
+        mainPanel.revalidate(); // Rafraîchit le panneau
+        mainPanel.repaint(); // Redessine le panneau
+    }
+
+    // Action pour le bouton "Gestion Facture"
+    private void btnFactures_Click() {
+        mainPanel.removeAll(); // Supprime tout contenu de mainPanel
+        mainPanel.add(facturePanel); // Ajoute le panneau de gestion des factures
+        mainPanel.revalidate(); // Rafraîchit le panneau
+        mainPanel.repaint(); // Redessine le panneau
+    }
+
+    // Action pour le bouton "À propos"
+    private void btnAbout_Click() {
+        mainPanel.removeAll(); // Supprime tout contenu de mainPanel
+        mainPanel.add(aboutPanel); // Ajoute le panneau "À propos"
+        mainPanel.revalidate(); // Rafraîchit le panneau
+        mainPanel.repaint(); // Redessine le panneau
+    }
+
+    // Action pour le bouton "Déconnexion"
+    private void btnLogout_Click() {
+        // Désactiver tous les boutons de la barre latérale
+        btnHome.setEnabled(false);
+        btnUsers.setEnabled(false);
+        btnClients.setEnabled(false);
+        btnArticles.setEnabled(false);
+        btnFactures.setEnabled(false);
+        btnAbout.setEnabled(false);
+        btnLogout.setEnabled(false);
+        // Afficher à nouveau le formulaire de connexion
+        showLoginForm();
+    }
+
+    // Méthode principale pour lancer l'application
+    public static void main(String[] args) {
+        new MainWindow(); // Crée et affiche la fenêtre
+    }
+}

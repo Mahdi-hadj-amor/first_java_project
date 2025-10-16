@@ -1,0 +1,153 @@
+package com.gestionfacture;
+
+import javax.swing.*;
+import java.awt.*;
+
+// Classe principale pour la fenêtre de gestion des articles
+public class ArticleWindow extends JFrame {
+
+    // Déclaration des éléments de l'interface
+    private JTable tableArticles; // Tableau pour afficher les articles
+    private JTextField txtDesignation; // Champ pour la désignation de l'article
+    private JTextField txtPrix; // Champ pour le prix de l'article
+    private JTextField txtQuantite; // Champ pour la quantité de l'article
+    private JButton btnAjouter; // Bouton pour ajouter un article
+    private JButton btnModifier; // Bouton pour modifier un article
+    private JButton btnSupprimer; // Bouton pour supprimer un article
+    private JButton btnRetour; // Bouton pour revenir au menu principal
+    private JLabel lblDesignation; // Label pour "Désignation"
+    private JLabel lblPrix; // Label pour "Prix"
+    private JLabel lblQuantite; // Label pour "Quantité"
+
+    // Constructeur
+    public ArticleWindow() {
+        initializeComponents(); // Appelle la méthode pour créer les éléments
+    }
+
+    // Méthode pour créer tous les éléments de la fenêtre
+    private void initializeComponents() {
+        // Configuration de la fenêtre
+        setTitle("Gestion des Articles"); // Titre de la fenêtre
+        setSize(800, 500); // Taille de la fenêtre
+        setLocationRelativeTo(null); // Centre la fenêtre sur l'écran
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // Ferme l'application quand on clique sur X
+        setLayout(null); // Positionnement manuel
+        getContentPane().setBackground(Color.WHITE); // Fond blanc
+
+        // Label pour "Désignation"
+        lblDesignation = new JLabel("Désignation");
+        lblDesignation.setBounds(20, 20, 100, 25); // Position et taille
+        lblDesignation.setFont(new Font("Arial", Font.PLAIN, 12)); // Police
+        add(lblDesignation);
+
+        // Champ pour la désignation
+        txtDesignation = new JTextField();
+        txtDesignation.setBounds(120, 20, 200, 25); // Position et taille
+        txtDesignation.setFont(new Font("Arial", Font.PLAIN, 12)); // Police
+        add(txtDesignation);
+
+        // Label pour "Prix"
+        lblPrix = new JLabel("Prix");
+        lblPrix.setBounds(20, 60, 100, 25); // Position et taille
+        lblPrix.setFont(new Font("Arial", Font.PLAIN, 12)); // Police
+        add(lblPrix);
+
+        // Champ pour le prix
+        txtPrix = new JTextField();
+        txtPrix.setBounds(120, 60, 200, 25); // Position et taille
+        txtPrix.setFont(new Font("Arial", Font.PLAIN, 12)); // Police
+        add(txtPrix);
+
+        // Label pour "Quantité"
+        lblQuantite = new JLabel("Quantité");
+        lblQuantite.setBounds(20, 100, 100, 25); // Position et taille
+        lblQuantite.setFont(new Font("Arial", Font.PLAIN, 12)); // Police
+        add(lblQuantite);
+
+        // Champ pour la quantité
+        txtQuantite = new JTextField();
+        txtQuantite.setBounds(120, 100, 200, 25); // Position et taille
+        txtQuantite.setFont(new Font("Arial", Font.PLAIN, 12)); // Police
+        add(txtQuantite);
+
+        // Bouton "Ajouter"
+        btnAjouter = new JButton("Ajouter");
+        btnAjouter.setBounds(350, 20, 100, 30); // Position et taille
+        btnAjouter.setBackground(Color.GREEN); // Fond vert
+        btnAjouter.setForeground(Color.WHITE); // Texte blanc
+        btnAjouter.setFont(new Font("Arial", Font.BOLD, 12)); // Police
+        btnAjouter.setBorder(null); // Pas de bordure
+        btnAjouter.addActionListener(e -> btnAjouter_Click()); // Action quand on clique
+        add(btnAjouter);
+
+        // Bouton "Modifier"
+        btnModifier = new JButton("Modifier");
+        btnModifier.setBounds(350, 60, 100, 30); // Position et taille
+        btnModifier.setBackground(Color.BLUE); // Fond bleu
+        btnModifier.setForeground(Color.WHITE); // Texte blanc
+        btnModifier.setFont(new Font("Arial", Font.BOLD, 12)); // Police
+        btnModifier.setBorder(null); // Pas de bordure
+        btnModifier.addActionListener(e -> btnModifier_Click()); // Action quand on clique
+        add(btnModifier);
+
+        // Bouton "Supprimer"
+        btnSupprimer = new JButton("Supprimer");
+        btnSupprimer.setBounds(350, 100, 100, 30); // Position et taille
+        btnSupprimer.setBackground(Color.RED); // Fond rouge
+        btnSupprimer.setForeground(Color.WHITE); // Texte blanc
+        btnSupprimer.setFont(new Font("Arial", Font.BOLD, 12)); // Police
+        btnSupprimer.setBorder(null); // Pas de bordure
+        btnSupprimer.addActionListener(e -> btnSupprimer_Click()); // Action quand on clique
+        add(btnSupprimer);
+
+        // Bouton "Retour"
+        btnRetour = new JButton("Retour");
+        btnRetour.setBounds(350, 140, 100, 30); // Position et taille
+        btnRetour.setBackground(Color.GRAY); // Fond gris
+        btnRetour.setForeground(Color.WHITE); // Texte blanc
+        btnRetour.setFont(new Font("Arial", Font.BOLD, 12)); // Police
+        btnRetour.setBorder(null); // Pas de bordure
+        btnRetour.addActionListener(e -> btnRetour_Click()); // Action quand on clique
+        add(btnRetour);
+
+        // Tableau pour afficher les articles
+        String[] columns = {"ID", "Désignation", "Prix", "Quantité"}; // Colonnes du tableau
+        String[][] data = {{"", "", "", ""}}; // Données vides pour l'instant
+        tableArticles = new JTable(data, columns);
+        JScrollPane scrollPane = new JScrollPane(tableArticles);
+        scrollPane.setBounds(20, 180, 740, 250); // Position et taille
+        add(scrollPane);
+
+        setVisible(true); // Affiche la fenêtre
+    }
+
+    // Action pour le bouton "Ajouter"
+    private void btnAjouter_Click() {
+        // Code pour ajouter un article (à connecter à la base de données)
+        JOptionPane.showMessageDialog(this, "Article ajouté (fonctionnalité à implémenter)!");
+    }
+
+    // Action pour le bouton "Modifier"
+    private void btnModifier_Click() {
+        // Code pour modifier un article (à connecter à la base de données)
+        JOptionPane.showMessageDialog(this, "Article modifié (fonctionnalité à implémenter)!");
+    }
+
+    // Action pour le bouton "Supprimer"
+    private void btnSupprimer_Click() {
+        // Code pour supprimer un article (à connecter à la base de données)
+        JOptionPane.showMessageDialog(this, "Article supprimé (fonctionnalité à implémenter)!");
+    }
+
+    // Action pour le bouton "Retour"
+    private void btnRetour_Click() {
+        // Retourne à la fenêtre principale
+        new MainWindow();
+        dispose(); // Ferme cette fenêtre
+    }
+
+    // Méthode principale pour lancer l'application
+    public static void main(String[] args) {
+        new ArticleWindow(); // Crée et affiche la fenêtre
+    }
+}

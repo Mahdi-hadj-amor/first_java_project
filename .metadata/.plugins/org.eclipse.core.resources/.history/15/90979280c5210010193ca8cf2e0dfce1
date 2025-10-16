@@ -1,0 +1,124 @@
+package com.gestionfacture;
+
+import javax.swing.*;
+import java.awt.*;
+
+// Classe pour le panneau de gestion des factures
+public class FacturePanel extends JPanel {
+
+    // Déclaration des éléments de l'interface
+    private JTable tableFactures; // Tableau pour afficher les factures
+    private JTextField txtClient; // Champ pour le nom du client
+    private JTextField txtDate; // Champ pour la date de la facture
+    private JTextField txtMontant; // Champ pour le montant total
+    private JButton btnAjouter; // Bouton pour ajouter une facture
+    private JButton btnModifier; // Bouton pour modifier une facture
+    private JButton btnSupprimer; // Bouton pour supprimer une facture
+    private JLabel lblClient; // Label pour "Client"
+    private JLabel lblDate; // Label pour "Date"
+    private JLabel lblMontant; // Label pour "Montant"
+
+    // Constructeur
+    public FacturePanel() {
+        initializeComponents(); // Appelle la méthode pour créer les éléments
+    }
+
+    // Méthode pour créer tous les éléments du panneau
+    private void initializeComponents() {
+        setBounds(0, 0, 1482, 688); // Taille pour remplir mainPanel
+        setBackground(Color.WHITE); // Fond blanc
+        setLayout(null); // Positionnement manuel
+
+        // Label pour "Client"
+        lblClient = new JLabel("Client");
+        lblClient.setBounds(20, 20, 100, 25); // Position et taille
+        lblClient.setFont(new Font("Arial", Font.PLAIN, 12)); // Police
+        add(lblClient);
+
+        // Champ pour le client
+        txtClient = new JTextField();
+        txtClient.setBounds(120, 20, 200, 25); // Position et taille
+        txtClient.setFont(new Font("Arial", Font.PLAIN, 12)); // Police
+        add(txtClient);
+
+        // Label pour "Date"
+        lblDate = new JLabel("Date");
+        lblDate.setBounds(20, 60, 100, 25); // Position et taille
+        lblDate.setFont(new Font("Arial", Font.PLAIN, 12)); // Police
+        add(lblDate);
+
+        // Champ pour la date
+        txtDate = new JTextField();
+        txtDate.setBounds(120, 60, 200, 25); // Position et taille
+        txtDate.setFont(new Font("Arial", Font.PLAIN, 12)); // Police
+        add(txtDate);
+
+        // Label pour "Montant"
+        lblMontant = new JLabel("Montant");
+        lblMontant.setBounds(20, 100, 100, 25); // Position et taille
+        lblMontant.setFont(new Font("Arial", Font.PLAIN, 12)); // Police
+        add(lblMontant);
+
+        // Champ pour le montant
+        txtMontant = new JTextField();
+        txtMontant.setBounds(120, 100, 200, 25); // Position et taille
+        txtMontant.setFont(new Font("Arial", Font.PLAIN, 12)); // Police
+        add(txtMontant);
+
+        // Bouton "Ajouter"
+        btnAjouter = new JButton("Ajouter");
+        btnAjouter.setBounds(350, 20, 100, 30); // Position et taille
+        btnAjouter.setBackground(Color.GREEN); // Fond vert
+        btnAjouter.setForeground(Color.WHITE); // Texte blanc
+        btnAjouter.setFont(new Font("Arial", Font.BOLD, 12)); // Police
+        btnAjouter.setBorder(null); // Pas de bordure
+        btnAjouter.addActionListener(e -> btnAjouter_Click()); // Action quand on clique
+        add(btnAjouter);
+
+        // Bouton "Modifier"
+        btnModifier = new JButton("Modifier");
+        btnModifier.setBounds(350, 60, 100, 30); // Position et taille
+        btnModifier.setBackground(Color.BLUE); // Fond bleu
+        btnModifier.setForeground(Color.WHITE); // Texte blanc
+        btnModifier.setFont(new Font("Arial", Font.BOLD, 12)); // Police
+        btnModifier.setBorder(null); // Pas de bordure
+        btnModifier.addActionListener(e -> btnModifier_Click()); // Action quand on clique
+        add(btnModifier);
+
+        // Bouton "Supprimer"
+        btnSupprimer = new JButton("Supprimer");
+        btnSupprimer.setBounds(350, 100, 100, 30); // Position et taille
+        btnSupprimer.setBackground(Color.RED); // Fond rouge
+        btnSupprimer.setForeground(Color.WHITE); // Texte blanc
+        btnSupprimer.setFont(new Font("Arial", Font.BOLD, 12)); // Police
+        btnSupprimer.setBorder(null); // Pas de bordure
+        btnSupprimer.addActionListener(e -> btnSupprimer_Click()); // Action quand on clique
+        add(btnSupprimer);
+
+        // Tableau pour afficher les factures
+        String[] columns = {"ID", "Client", "Date", "Montant"}; // Colonnes du tableau
+        String[][] data = {{"", "", "", ""}}; // Données vides pour l'instant
+        tableFactures = new JTable(data, columns);
+        JScrollPane scrollPane = new JScrollPane(tableFactures);
+        scrollPane.setBounds(20, 150, 1400, 500); // Position et taille
+        add(scrollPane);
+    }
+
+    // Action pour le bouton "Ajouter"
+    private void btnAjouter_Click() {
+        // Code pour ajouter une facture (à connecter à la base de données)
+        JOptionPane.showMessageDialog(this, "Facture ajoutée (fonctionnalité à implémenter)!");
+    }
+
+    // Action pour le bouton "Modifier"
+    private void btnModifier_Click() {
+        // Code pour modifier une facture (à connecter à la base de données)
+        JOptionPane.showMessageDialog(this, "Facture modifiée (fonctionnalité à implémenter)!");
+    }
+
+    // Action pour le bouton "Supprimer"
+    private void btnSupprimer_Click() {
+        // Code pour supprimer une facture (à connecter à la base de données)
+        JOptionPane.showMessageDialog(this, "Facture supprimée (fonctionnalité à implémenter)!");
+    }
+}

@@ -1,0 +1,22 @@
+package com.gestionfacture;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+public class DatabaseConnection {
+    // Définir les informations de connexion
+	private static final String URL = "jdbc:sqlserver://LAPTOP-ODCPSS87:1433;databaseName=DB_GestionFacture;integratedSecurity=true;trustServerCertificate=true";
+
+    // Méthode pour obtenir une connexion
+    public static Connection getConnection() {
+        try {
+            // Établir la connexion
+            Connection conn = DriverManager.getConnection(URL);
+            return conn;
+        } catch (SQLException e) {
+            // Afficher une erreur si la connexion échoue
+            System.out.println("Erreur de connexion: " + e.getMessage());
+            return null;
+        }
+    }
+}

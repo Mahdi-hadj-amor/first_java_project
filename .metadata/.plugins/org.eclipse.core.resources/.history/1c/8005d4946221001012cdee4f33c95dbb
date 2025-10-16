@@ -1,0 +1,170 @@
+package com.gestionfacture;
+import java.awt.*;
+import javax.swing.*;
+import java.sql.*;
+
+public class ArticleWindow extends JFrame {
+    // Créer les champs de texte comme variables globales
+    private JTextField nomField;
+    private JTextField qteField;
+    private JTextField puField;
+    private JTextField tvaField;
+    private JTextArea displayArea;
+
+    public ArticleWindow() {
+        // Définir la position et la taille de la fenêtre
+        this.setBounds(100, 20, 500, 400);
+        // Fermer la fenêtre quand on clique sur la croix
+        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        // Donner un titre à la fenêtre
+        this.setTitle("Gestion des Articles");
+
+        // Créer les labels (étiquettes)
+        JLabel l1 = new JLabel("Gestion des Articles");
+        JLabel l2 = new JLabel("Nom Article:");
+        JLabel l3 = new JLabel("Quantité:");
+        JLabel l4 = new JLabel("Prix HTVA:");
+        JLabel l5 = new JLabel("TVA:");
+
+        // Créer les champs de texte
+        nomField = new JTextField(15);
+        qteField = new JTextField(5);
+        puField = new JTextField(5);
+        tvaField = new JTextField(5);
+
+        // Créer les boutons
+        JButton b1 = new JButton("Ajouter");
+        JButton b2 = new JButton("Afficher");
+
+        // Créer la zone d'affichage
+        displayArea = new JTextArea(10, 40);
+        JScrollPane scrollPane = new JScrollPane(displayArea);
+
+        // Créer des panneaux pour organiser les éléments
+        JPanel p1 = new JPanel();
+        p1.setLayout(new FlowLayout());
+        p1.add(l1);
+
+        JPanel p2 = new JPanel();
+        p2.setLayout(new FlowLayout());
+        p2.add(l2);
+
+        JPanel p3 = new JPanel();
+        p3.setLayout(new FlowLayout());
+        p3.add(nomField);
+
+        JPanel p4 = new JPanel();
+        p4.setLayout(new FlowLayout());
+        p4.add(l3);
+
+        JPanel p5 = new JPanel();
+        p5.setLayout(new FlowLayout());
+        p5.add(qteField);
+
+        JPanel p6 = new JPanel();
+        p6.setLayout(new FlowLayout());
+        p6.add(l4);
+
+        JPanel p7 = new JPanel();
+        p7.setLayout(new FlowLayout());
+        p7.add(puField);
+
+        JPanel p8 = new JPanel();
+        p8.setLayout(new FlowLayout());
+        p8.add(l5);
+
+        JPanel p9 = new JPanel();
+        p9.setLayout(new FlowLayout());
+        p9.add(tvaField);
+
+        JPanel p10 = new JPanel();
+        p10.setLayout(new FlowLayout());
+        p10.add(b1);
+
+        JPanel p11 = new JPanel();
+        p11.setLayout(new FlowLayout());
+        p11.add(b2);
+
+        // Panneau pour organiser les champs
+        JPanel p12 = new JPanel();
+        p12.setLayout(new GridLayout(4, 2));
+        p12.add(p2);
+        p12.add(p3);
+        p12.add(p4);
+        p12.add(p5);
+        p12.add(p6);
+        p12.add(p7);
+        p12.add(p8);
+        p12.add(p9);
+
+        // Panneau pour organiser les boutons
+        JPanel p13 = new JPanel();
+        p13.setLayout(new GridLayout(1, 2));
+        p13.add(p10);
+        p13.add(p11);
+
+        // Panneau principal qui contient tout
+        JPanel p14 = new JPanel();
+        p14.setLayout(new GridLayout(3, 1));
+        p14.add(p1);
+        p14.add(p12);
+        p14.add(p13);
+
+        // Ajouter les panneaux à la fenêtre
+        this.setLayout(new BorderLayout());
+        this.add(p14, BorderLayout.NORTH);
+        this.add(scrollPane, BorderLayout.CENTER);
+
+        // Ajouter une action au bouton "Ajouter"
+        b1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                try {
+                    Connection conn = DatabaseConnection.getConnection();
+                    String sql = "INSERT INTO Article (Nom_Article, Qte_Stock, PUHTVA, TVA, Creer_Par) VALUES (?, ?, ?, ?, 'admin')";
+                    PreparedStatement pstmt = conn.prepareStatement(sql);
+                    pstmt.setString(1, nomField.getText());
+                    pstmt.setInt(2, Integer.parseInt(qteField.getText()));
+                    pstmt.setDouble(3, Double.parseDouble(puField.getText()));
+                    pstmt.setDouble(4, Double.parseDouble(tvaField.getText()));
+                    pstmt.executeUpdate();
+
+                    JOptionPane.showMessageDialog(null, "Article ajouté avec succès!");
+                    pstmt.close();
+                    conn.close();
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(null, "Erreur: " + ex.getMessage());
+                }
+            }
+        });
+
+        // Ajouter une action au bouton "Afficher"
+        b2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                try {
+                    Connection conn = DatabaseConnection.getConnection();
+                    Statement stmt = conn.createStatement();
+                    ResultSet rs = stmt.executeQuery("SELECT * FROM Article");
+
+                    displayArea.setText("");
+                    while (rs.next()) {
+                        int code = rs.getInt("Code_Article");
+                        String nom = rs.getString("Nom_Article");
+                        int qte = rs.getInt("Qte_Stock");
+                        double pu = rs.getDouble("PUHTVA");
+                        double tva = rs.getDouble("TVA");
+                        displayArea.append("Code: " + code + ", Nom: " + nom + ", Quantité: " + qte + ", Prix HTVA: " + pu + ", TVA: " + tva + "\n");
+                    }
+
+                    rs.close();
+                    stmt.close();
+                    conn.close();
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(null, "Erreur: " + ex.getMessage());
+                }
+            }
+        });
+
+        // Afficher la fenêtre
+        this.show();
+    }
+}

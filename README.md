@@ -4,7 +4,7 @@
 [![Swing](https://img.shields.io/badge/Swing-GUI-orange.svg)](https://docs.oracle.com/javase/tutorial/uiswing/)
 [![SQL Server](https://img.shields.io/badge/Database-SQL%20Server-red.svg)](https://www.microsoft.com/en-us/sql-server)
 
-Une application Java Swing moderne pour la gestion simplifiée des factures, clients et articles. Simplifiez vos transactions commerciales avec une interface utilisateur intuitive et une connexion sécurisée à une base de données SQL Server.
+Une application Java Swing moderne pour la gestion simplifiée des factures, clients et articles. Simplifiez vos transactions commerciales avec une interface utilisateur intuitive et une connexion sécurisée à une base de données SQL Server..
 
 ## ✨ Fonctionnalités
 
